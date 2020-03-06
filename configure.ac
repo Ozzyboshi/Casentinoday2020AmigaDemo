@@ -1,0 +1,54 @@
+AC_INIT([casentino2020],[0.1])
+
+AM_INIT_AUTOMAKE([dist-zip silent-rules])
+
+AC_CONFIG_SRCDIR([src/main.c])
+
+AC_PROG_CC([m68k-amigaos-gcc])
+#AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -O3 -DNDEBUG -std=gnu11')
+#AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -Os')
+AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -ffast-math -DAMIGA -Wall -Wextra -O3')
+
+# Need ace include dir to build the prject
+AC_CHECK_HEADERS([stdlib.h ace/managers/key.h ace/managers/game.h ace/utils/chunky.h ace/managers/viewport/simplebuffer.h],[have_ace_includes=yes],[have_ace_includes=no])
+if test "${have_ace_includes}" = no; then
+	AC_MSG_ERROR([Unable to find required ACE include files]);
+fi
+
+AC_SEARCH_LIBS([viewCreate], [ace],[have_ace_lib=yes],[have_ace_lib=no])
+if test "${have_ace_lib}" = no; then
+	AC_MSG_ERROR([Unable to find required ACE lib file]);
+fi
+
+AC_CHECK_PROG([bitmap_conv],[bitmap_conv],[yes],[no],,)
+if test "${bitmap_conv}" = no; then
+	AC_MSG_ERROR([Unable to find bitmap_conv utility, this utility is part of ACE, you can find it under the tool directory]);
+fi
+
+AC_CHECK_PROG([palette_conv],[palette_conv],[yes],[no],,)
+if test "${palete_conv}" = no; then
+	AC_MSG_ERROR([Unable to find palette_conv utility, this utility is part of ACE, you can find it under the tool directory]);
+fi
+
+AC_CHECK_PROG([assembler],[vasmm68k_mot],[vasmm68k_mot],[no],,)
+if test "${assembler}" = no; then
+	AC_MSG_ERROR([Unable to find vasm68k_mot assembler]);
+fi
+
+AC_CHECK_PROG([dd],[dd],[yes],[no],,)
+if test "${dd}" = no; then
+	AC_MSG_ERROR([Unable to find dd utility]);
+fi
+
+AC_CONFIG_FILES([Makefile src/Makefile _res/Makefile])
+# asm=vasmm68k_mot
+AC_OUTPUT
+
+echo \
+"-------------------------------------------------
+${PACKAGE_NAME} Version ${PACKAGE_VERSION}
+Compiler: '${CC} ${CFLAGS} ${CPPFLAGS}'
+Bindir: '${bindir}'
+Execprefix: '${exec_prefix}'
+Prefix: '${prefix}'
+--------------------------------------------------"
