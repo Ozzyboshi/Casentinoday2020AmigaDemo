@@ -47,7 +47,11 @@ UBYTE moverMove(tMover sMover)
   if (uwLocationY>239)
     ubBitsChanged=0;
   else
+  {
+//	g_pCustom->color[0] = 0x0AAA;
     ubBitsChanged=printCursorPixel(s_pMainBuffer,uwLocationXTrail, uwLocationYTrail, uwOffset);
+//g_pCustom->color[0] = 0x0000;
+  }
 
   if (isFull(sMover.tQueue))
   {

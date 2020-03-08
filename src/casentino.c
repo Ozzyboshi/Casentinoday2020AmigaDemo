@@ -560,6 +560,11 @@ void gameGsLoop(void) {
     if (process)
     {
       viewProcessManagers(s_pView);
+
+#ifdef COLORDEBUG
+  g_pCustom->color[0] = 0x0FF0;
+#endif
+
       copProcessBlocks();
     }
 
