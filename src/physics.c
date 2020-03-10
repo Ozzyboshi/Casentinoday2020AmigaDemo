@@ -44,7 +44,7 @@ UBYTE moverMove(tMover sMover)
   spriteMove3((FUBYTE)sMover.ubSpriteIndex,uwLocationX,uwLocationY);
 
 #ifdef TRAIL
-  if (uwLocationY>239)
+  if (uwLocationY>255)
     ubBitsChanged=0;
   else
   {
