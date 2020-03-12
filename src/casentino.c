@@ -16,7 +16,7 @@ Boston, MA 02111-1307, USA.
 
 #include "casentino.h"
 
-#include <ace/managers/key.h> // Keyboard processing
+//#include <ace/managers/key.h> // Keyboard processing
 #include <ace/managers/game.h> // For using gameClose
 #include <ace/managers/system.h> // For systemUnuse and systemUse
 #include <ace/managers/viewport/simplebuffer.h> // Simple buffer
@@ -85,10 +85,11 @@ tAceSprite s_pAceSprites[ACE_MAXSPRITES];*/
 typedef struct _tStageManager {
   void (*g_pPreStageFunction) ();
   void (*g_pStageFunction) ();
+  void (*g_pStageInputFunction) ();
 } tStageManager;
 tStageManager s_pStagesFunctions[MAXSTAGES]={
-  { .g_pPreStageFunction = stage1pre, .g_pStageFunction=stage1},
-  { .g_pPreStageFunction = stage2pre, .g_pStageFunction=stage2}
+  { .g_pPreStageFunction = stage1pre, .g_pStageFunction=stage1, .g_pStageInputFunction=stage1input},
+  { .g_pPreStageFunction = stage2pre, .g_pStageFunction=stage2, .g_pStageInputFunction=stage2input}
 };
 
 //#define NUM_IMAGES 8
@@ -156,7 +157,7 @@ tCameraManager *s_pCameraMain;
 static tView *s_pView; // View containing all the viewports
 tVPort *s_pVpScore; // Viewport for score
 static tSimpleBufferManager *s_pScoreBuffer;
-static tVPort *s_pVpMain; // Viewport for playfield
+tVPort *s_pVpMain; // Viewport for playfield
 tSimpleBufferManager *s_pMainBuffer;
 
 static tCopBlock *myBlock;
@@ -165,6 +166,7 @@ UBYTE g_ubVBounceEnabled = 1;
 UBYTE g_ubHBounceEnabled = 1;
 
 static UBYTE g_ubStageIndex=0;
+BYTE bSpriteDirection = 0 ;
 
 void gameGsCreate(void) {
 
@@ -376,7 +378,7 @@ if (1)
 
 void gameGsLoop(void) {
   static BYTE bSpriteCounter = 0;
-  static BYTE bSpriteDirection = 0 ;
+  //static BYTE bSpriteDirection = 0 ;
 #ifdef COLORDEBUG
   g_pCustom->color[0] = 0x0FFF; // white
 #endif
@@ -399,28 +401,9 @@ void gameGsLoop(void) {
     gameClose();
     return ;
   }
-  else if (keyUse(KEY_D))
-  {
-    if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
-      g_Wind.x=fix16_add(g_Wind.x,g_WindStep);
-    if (g_Wind.x>0) bSpriteDirection=1;
-    else if (g_Wind.x==0) bSpriteDirection=0;
-    else if (g_Wind.x<0) bSpriteDirection=-1;
-  }
-  else if (keyUse(KEY_A))
-  {
-    if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
-      g_Wind.x=fix16_sub(g_Wind.x,g_WindStep);
-    if (g_Wind.x>0) bSpriteDirection=1;
-    else if (g_Wind.x==0) bSpriteDirection=0;
-    else if (g_Wind.x<0) bSpriteDirection=-1;
-  }
-  else if (keyUse(KEY_S))
-  {
-    g_Wind.x=0;
-    bSpriteDirection=0;
-  }
-  else 
+  s_pStagesFunctions[g_ubStageIndex].g_pStageInputFunction ();
+
+  if (1)
   {
 #ifdef COLORDEBUG
   g_pCustom->color[0] = 0x0F00;
@@ -505,6 +488,7 @@ void gameGsLoop(void) {
       changeCopperColor(s_pView,myBlock,vampireitaliapalette_data,6,5);
       changeCopperColor(s_pView,myBlock,vampireitaliapalette_data,7,6);
       changeCopperColor(s_pView,myBlock,vampireitaliapalette_data,8,7);
+      //nextStage();
     }
     // D&D palette
     else if (s_pCameraMain->uPos.uwX==960)

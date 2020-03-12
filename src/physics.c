@@ -1,4 +1,22 @@
+/*
+Copyright (C) 2020-2021 Alessio Garzi <gun101@email.it>
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as
+published by the Free Software Foundation; either version 2 of the
+License, or (at your option) any later version.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+You should have received a copy of the GNU General Public
+License along with this program; if not, write to the
+Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+Boston, MA 02111-1307, USA.
+*/
+
 #include "physics.h"
+
+tVPort *s_pVpMain;
 
 void moverBounce(tMover* pMover)
 {
@@ -9,6 +27,22 @@ void moverBounce(tMover* pMover)
   {
     pMover->tVelocity.x=fix16_mul(pMover->tVelocity.x,fix16_from_int(-1));
     pMover->tVelocity.x=fix16_sub(pMover->tVelocity.x,pMover->tAccelleration.x);
+    
+    // if right bounce check if next iteration we exit to the right bounce zone, if not force location.x to right limit otherwise we could be stuck on the right
+    if (x>s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit)
+    {
+	int exitBouncingStage = fix16_to_int(fix16_add( pMover->tLocation.x,pMover->tVelocity.x));
+	if (exitBouncingStage>s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit)
+		pMover->tLocation.x=fix16_from_int(s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit);
+    }
+
+    // if left bounce check if next iteration we exit to the left bounce zone, if not force location.x to left limit otherwise we could be stuck on the left
+    if (x<=0)
+    {
+	int exitBouncingStage = fix16_to_int(fix16_add( pMover->tLocation.x,pMover->tVelocity.x));
+	if (exitBouncingStage<=0) 
+		pMover->tLocation.x=fix16_from_int(1);
+    }
   }
 
   if (g_ubVBounceEnabled && (y>s_pAceSprites[pMover->ubSpriteIndex].iBounceBottomLimit||y<10))
@@ -44,7 +78,8 @@ UBYTE moverMove(tMover sMover)
   spriteMove3((FUBYTE)sMover.ubSpriteIndex,uwLocationX,uwLocationY);
 
 #ifdef TRAIL
-  if (uwLocationY>255)
+  //if (uwLocationY>255)
+  if (uwLocationYTrail>s_pVpMain->uwHeight)
     ubBitsChanged=0;
   else
   {

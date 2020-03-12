@@ -16,6 +16,37 @@ Boston, MA 02111-1307, USA.
 
 #include "stages.h"
 
+#include <ace/managers/key.h>
+
+fix16_t g_WindStep;
+BYTE bSpriteDirection ;
+
+void stage1input()
+{
+  if (keyUse(KEY_D))
+  {
+    if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
+      g_Wind.x=fix16_add(g_Wind.x,g_WindStep);
+    if (g_Wind.x>0) bSpriteDirection=1;
+    else if (g_Wind.x==0) bSpriteDirection=0;
+    else if (g_Wind.x<0) bSpriteDirection=-1;
+  }
+  else if (keyUse(KEY_A))
+  {
+    if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
+      g_Wind.x=fix16_sub(g_Wind.x,g_WindStep);
+    if (g_Wind.x>0) bSpriteDirection=1;
+    else if (g_Wind.x==0) bSpriteDirection=0;
+    else if (g_Wind.x<0) bSpriteDirection=-1;
+  }
+  else if (keyUse(KEY_S))
+  {
+    g_Wind.x=0;
+    bSpriteDirection=0;
+  }
+  return ;
+}
+
 void stage1pre()
 {
     spriteVectorInit(&g_Sprite1Vector,1,125,115,0,0,LITTLE_BALLS_MASS);

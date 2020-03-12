@@ -17,11 +17,42 @@ Boston, MA 02111-1307, USA.
 
 #include "stages.h"
 
+#include <ace/managers/key.h>
+
+
 fix16_t g_WindStep;
+
+BYTE bSpriteDirection ;
+
+void stage2input()
+{
+  if (keyUse(KEY_D))
+  {
+    if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
+      g_Wind.x=fix16_add(g_Wind.x,g_WindStep);
+    if (g_Wind.x>0) bSpriteDirection=1;
+    else if (g_Wind.x==0) bSpriteDirection=0;
+    else if (g_Wind.x<0) bSpriteDirection=-1;
+  }
+  else if (keyUse(KEY_A))
+  {
+    if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
+      g_Wind.x=fix16_sub(g_Wind.x,g_WindStep);
+    if (g_Wind.x>0) bSpriteDirection=1;
+    else if (g_Wind.x==0) bSpriteDirection=0;
+    else if (g_Wind.x<0) bSpriteDirection=-1;
+  }
+  else if (keyUse(KEY_S))
+  {
+    g_Wind.x=0;
+    bSpriteDirection=0;
+  }
+  return ;
+}
 
 void stage2pre()
 {
-	spriteVectorInit(&g_Sprite1Vector,1,150,237,0,0,LITTLE_BALLS_MASS);
+	spriteVectorInit(&g_Sprite1Vector,1,150,239,0,0,LITTLE_BALLS_MASS);
     //spriteVectorInit(&g_Sprite2Vector,2,105,95,0,0,2);
     //spriteVectorInit(&g_Sprite3Vector,3,75,75,0,0,2);
     spriteVectorInit(&g_Sprite4Vector,4,BIG_BALL_START_POSITION_X,223,0,0,5);
@@ -58,18 +89,18 @@ void stage2()
 #if 1
     if (g_Sprite4Vector.ubLocked==0)
     {
-        
-
         spriteVectorApplyForce(&g_Sprite4Vector,&g_Gravity);
         spriteVectorApplyForce(&g_Sprite4Vector,&g_Wind);
         //spriteVectorApplyForceToVelocity(&g_Sprite1Vector,&g_Gravity);
 
         // Get friction direction and magnitude
-        v2d tFriction;
-        //v2d tVelocity = g_Sprite1Vector.tVelocity;*/
-        spriteVectorGetFrictionDirection(g_Sprite4Vector.tVelocity, &tFriction);
-        spriteVectorGetFrictionMagnitude(tFriction,&tFriction,fix16_div(fix16_from_int(-1),fix16_from_int(10)));
-        spriteVectorApplyForce(&g_Sprite4Vector,&tFriction);
+        if (g_ubVBounceEnabled)
+        {
+            v2d tFriction;
+            spriteVectorGetFrictionDirection(g_Sprite4Vector.tVelocity, &tFriction);
+            spriteVectorGetFrictionMagnitude(tFriction,&tFriction,fix16_div(fix16_from_int(-1),fix16_from_int(10)));
+            spriteVectorApplyForce(&g_Sprite4Vector,&tFriction);
+        }
         //spriteVectorApplyForceToVelocity(&g_Sprite1Vector,&tFriction);
         
         moverAddAccellerationToVelocity(&g_Sprite4Vector);

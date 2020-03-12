@@ -28,8 +28,10 @@ tMover g_Sprite4Vector;
 
 v2d g_Gravity , g_Wind;
 
+void stage1input();
 void stage1pre();
 void stage1();
+void stage2input();
 void stage2pre();
 void stage2();
 
