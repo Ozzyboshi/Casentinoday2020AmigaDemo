@@ -54,6 +54,7 @@ void stage1pre()
     spriteVectorInit(&g_Sprite3Vector,3,75,75,0,0,LITTLE_BALLS_MASS);
     spriteVectorInit(&g_Sprite4Vector,4,BIG_BALL_START_POSITION_X,85,0,0,BIG_BALL_MASS);
     g_ubVBounceEnabled=1;
+    g_Wind.x=0;
 }
 
 void stage1()

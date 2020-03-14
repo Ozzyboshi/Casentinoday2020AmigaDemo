@@ -19,7 +19,7 @@ Boston, MA 02111-1307, USA.
 
 //#define COLORDEBUG
 
-#define MAXSTAGES 2
+//#define MAXSTAGES 2
 #define NUM_IMAGES 8
 #define BIG_BALL_START_POSITION_X 170
 #define BIG_BALL_MASS 8

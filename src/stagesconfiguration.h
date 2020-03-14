@@ -14,30 +14,35 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 */
 
-#ifndef _STAGES_H_
-#define _STAGES_H_
+#define MAXSTAGES 3 // Max num of stages inside the demo (progressive order)
 
+typedef struct _tStageManager {
+  void (*g_pPreStageFunction) ();
+  void (*g_pStageFunction) ();
+  void (*g_pStageInputFunction) ();
+} tStageManager;
 
-#include "casentino.h"
-#include "physics.h"
+tStageManager s_pStagesFunctions[]={
 
-tMover g_Sprite1Vector;
-tMover g_Sprite2Vector;
-tMover g_Sprite3Vector;
-tMover g_Sprite4Vector;
+	// Stage 1 - gravity + wind
+  {
+  	.g_pPreStageFunction = stage1pre, 
+  	.g_pStageFunction=stage1, 
+  	.g_pStageInputFunction=stage1input
+  },
 
-v2d g_Gravity , g_Wind;
+  // Stage 2 - friction
+  {
+  	.g_pPreStageFunction = stage2pre,
+  	.g_pStageFunction=stage2,
+  	.g_pStageInputFunction=stage2input
+  },
 
-void stage1input();
-void stage1pre();
-void stage1();
-void stage2input();
-void stage2pre();
-void stage2();
-
-// Attraction stage prototypes
-void stageAttractionInput();
-void stageAttraction();
-void stageAttractionPre();
-
-#endif
+  // Stage 3 - attraction
+  {
+    .g_pPreStageFunction = stageAttractionPre,
+    .g_pStageFunction=stageAttraction,
+    .g_pStageInputFunction=stageAttractionInput
+  }
+  
+};

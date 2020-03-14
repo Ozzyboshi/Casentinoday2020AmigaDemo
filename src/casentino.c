@@ -58,39 +58,7 @@ Boston, MA 02111-1307, USA.
 #include "acecustom.h"
 #include "physics.h"
 #include "stages.h"
-
-
-//#include <chunky.h>
-
-
-//static v2d location,velocity;
-
-
-//#define SOUND
-/*#define ACE_MAXSPRITES 8
-typedef struct _tAceSprite {
-  UBYTE* pSpriteData;
-  ULONG ulSpriteSize;
-  BYTE bTrailingSpriteIndex;
-  UWORD uwSpriteHeight;
-  UWORD uwSpriteCenter;
-
-  int iBounceBottomLimit;
-  int iBounceRightLimit;
-
-} tAceSprite;
-tAceSprite s_pAceSprites[ACE_MAXSPRITES];*/
-
-//#define MAXSTAGES 2
-typedef struct _tStageManager {
-  void (*g_pPreStageFunction) ();
-  void (*g_pStageFunction) ();
-  void (*g_pStageInputFunction) ();
-} tStageManager;
-tStageManager s_pStagesFunctions[MAXSTAGES]={
-  { .g_pPreStageFunction = stage1pre, .g_pStageFunction=stage1, .g_pStageInputFunction=stage1input},
-  { .g_pPreStageFunction = stage2pre, .g_pStageFunction=stage2, .g_pStageInputFunction=stage2input}
-};
+#include "stagesconfiguration.h"
 
 //#define NUM_IMAGES 8
 #define TOTAL_WIDTH 320*NUM_IMAGES
@@ -164,6 +132,7 @@ static tCopBlock *myBlock;
 
 UBYTE g_ubVBounceEnabled = 1;
 UBYTE g_ubHBounceEnabled = 1;
+UBYTE g_endStageFlag = 0;
 
 static UBYTE g_ubStageIndex=0;
 BYTE bSpriteDirection = 0 ;
@@ -285,6 +254,9 @@ void gameGsCreate(void) {
   PRINTF(6,20,"Background artwork : Dr.Procton")
   PRINTF(6,30,"Ball sprites : Z3k")
   PRINTF(6,40,"Music : Stolen from Morph of dual crew")
+  PRINTF(6,50,"Physics math taken from Daniel Shiffman book 'Nature of code'")
+  PRINTF(6,80,"Source code of this invitintro available at : ")
+  PRINTF(6,90,"https://github.com/Ozzyboshi/Casentinoday2020AmigaDemo")
 
   copyToMainBpl(valkyrie320x244_data,7,0);                            // Screen 7 valchirie img 320px
 
@@ -374,6 +346,8 @@ if (1)
   memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame1_2_data,sizeof(ball2bpl32x32_frame1_2_data));
 
   copProcessBlocks();
+
+  //nextStage();
 }
 
 void gameGsLoop(void) {
@@ -529,6 +503,7 @@ void gameGsLoop(void) {
       changeCopperColor(s_pView,myBlock,valkyrie320x244palette_data,15,14);
 
       g_ubVBounceEnabled=0;
+      g_endStageFlag = 1 ;
     }
 
 #ifdef COLORDEBUG
@@ -831,6 +806,7 @@ void moverBounce(tMover* pMover)
 
 void nextStage()
 {
+  g_endStageFlag = 0;
   g_ubStageIndex++;
   if (g_ubStageIndex==MAXSTAGES) g_ubStageIndex=0;
   s_pStagesFunctions[g_ubStageIndex].g_pPreStageFunction ();
