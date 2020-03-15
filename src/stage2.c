@@ -26,7 +26,7 @@ BYTE bSpriteDirection ;
 
 void stage2input()
 {
-  if (keyUse(KEY_D))
+  if (keyCheck(KEY_D))
   {
     if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
       g_Wind.x=fix16_add(g_Wind.x,g_WindStep);
@@ -34,7 +34,7 @@ void stage2input()
     else if (g_Wind.x==0) bSpriteDirection=0;
     else if (g_Wind.x<0) bSpriteDirection=-1;
   }
-  else if (keyUse(KEY_A))
+  else if (keyCheck(KEY_A))
   {
     if (fix16_abs(g_Wind.x)<fix16_from_int(WIND_MAX_STEP))
       g_Wind.x=fix16_sub(g_Wind.x,g_WindStep);
@@ -42,7 +42,8 @@ void stage2input()
     else if (g_Wind.x==0) bSpriteDirection=0;
     else if (g_Wind.x<0) bSpriteDirection=-1;
   }
-  else if (keyUse(KEY_S))
+  //else if (keyUse(KEY_S))
+  else
   {
     g_Wind.x=0;
     bSpriteDirection=0;

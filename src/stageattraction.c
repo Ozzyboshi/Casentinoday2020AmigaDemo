@@ -115,7 +115,7 @@ void stageAttraction()
     v2d sprite1Centerlocation,sprite4Centerlocation;
     sprite1Centerlocation.x = fix16_add(g_Sprite1Vector.tLocation.x,fix16_from_int(8));
     sprite1Centerlocation.y = fix16_add(g_Sprite1Vector.tLocation.y,fix16_from_int(8));
-    sprite4Centerlocation.x = fix16_add(g_Sprite4Vector.tLocation.x,fix16_from_int(8));
+    sprite4Centerlocation.x = fix16_add(g_Sprite4Vector.tLocation.x,fix16_from_int(16));
     sprite4Centerlocation.y = fix16_add(g_Sprite4Vector.tLocation.y,fix16_from_int(16));
 
     //v2d_sub(&sDirection, &g_Sprite4Vector.tLocation, &g_Sprite1Vector.tLocation);
