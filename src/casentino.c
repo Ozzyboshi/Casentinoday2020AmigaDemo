@@ -31,6 +31,8 @@ Boston, MA 02111-1307, USA.
 #include "../_res/ball2bpl16x16_frame1_palette.h"
 #include "../_res/VampireItalialogo.h"
 #include "../_res/VampireItalialogopalette.h"
+#include "../_res/intermezzoV2.h"
+#include "../_res/intermezzoV2_palette.h"
 #include "../_res/ball2bpl16x16_frame1.h"
 #include "../_res/ball2bpl16x16_frame2.h"
 #include "../_res/ball2bpl16x16_frame3.h"
@@ -59,12 +61,11 @@ Boston, MA 02111-1307, USA.
 #include "physics.h"
 #include "stages.h"
 #include "stagesconfiguration.h"
+#include "collisionsmanagement.h"
 
 //#define NUM_IMAGES 8
 #define TOTAL_WIDTH 320*NUM_IMAGES
 #define RESET_SCROLL 320*(NUM_IMAGES-1)
-
-#define FONT_MAIN_COLOR 10
 
 #define PRINTF(var,var2,var3) fontDrawStr(s_pMainBuffer->pBack, s_pFontUI, var*320+10,var2,var3, FONT_MAIN_COLOR, FONT_LAZY);
 #define SETSPRITEIMG(var,var2,var3) memcpy(s_pAceSprites[var].pSpriteData+4,var2,var3);
@@ -74,19 +75,10 @@ void mt_music();
 void mt_end();
 #endif
 
-//void spriteVectorInit(tMover* ,const UBYTE,const int, const int, const int, const int, const unsigned int);
-//void spriteVectorApplyForce(tMover*,v2d*);
-//UBYTE moverMove(tMover);
 void moverBounce(tMover*);
 
-//void bounce();
-//void reposition();
 void copyToMainBpl(const unsigned char*,const UBYTE, const UBYTE);
 tCopBlock *copBlockEnableSpriteFull(tCopList *, FUBYTE , UBYTE* , ULONG );
-
-//void SetTrailingSprite(const FUBYTE, const FUBYTE);
-/*void spriteMove2(FUBYTE fubSpriteIndex,UWORD,UWORD);
-void spriteMove3(FUBYTE fubSpriteIndex,UWORD,UWORD);*/
 
 void nextStage();
 
@@ -101,11 +93,12 @@ static inline void changeCopperColor(tView *s_pView, tCopBlock * myBlock,const u
   copChangeMove(s_pView->pCopList, myBlock, uwCopblockIndex, &g_pCustom->color[uwPaletteColorStart], uwColTmp);
 }
 
-tMover g_Sprite1Vector = {0,{0,0},{0,0},{0,0},0,0,0 };
-tMover g_Sprite2Vector = {0,{0,0},{0,0},{0,0},0,0,0 };
-tMover g_Sprite3Vector = {0,{0,0},{0,0},{0,0},0,0,0 };
-tMover g_Sprite4Vector = {0,{0,0},{0,0},{0,0},0,0,0 };
+tMover g_Sprite1Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
+tMover g_Sprite2Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
+tMover g_Sprite3Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
+tMover g_Sprite4Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
 v2d g_Gravity , g_Wind;
+UBYTE g_ubIsCollisionEnabled = 1;
 
 fix16_t g_WindStep;
 
@@ -217,11 +210,6 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[23] = uwColTmp;
   s_pVpScore->pPalette[27] = uwColTmp;
 
-  // Sprite 2 colors (cursor)
- // s_pVpScore->pPalette[23] = 0x0070; // Gray
-  /*s_pVpScore->pPalette[24] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[25] = 0x0bf0;*/
-
   s_pFontUI = fontCreateFromMem((UBYTE*)uni54_data);
   if (s_pFontUI==NULL) return;
 
@@ -229,13 +217,15 @@ void gameGsCreate(void) {
 
   copyToMainBpl(valkyrie320x244_data,0,0);                            // Screen 0 valchirie img 320px
 
-  PRINTF(1, 0, "- Showcase Morphos (Ozzyboshi)")                     // Screen 1 empty for text
+  copyToMainBpl(intermezzoV2_data,1,0);                              // Screen 1 image intermezzoV2
+  /*PRINTF(1, 0, "- Showcase Morphos (Ozzyboshi)")                     // Screen 1 empty for text
   PRINTF(1, 10,"- Showcase Vampire (DrProcton)")
   PRINTF(1, 20,"- Showcase A1000 (Z3K)")
   PRINTF(1, 40,"Prenotazioni whatsapp o sms a 333333333")
   PRINTF(1, 60,"Press A to blow wind to left")
   PRINTF(1, 70,"Press S to stop wind")
   PRINTF(1, 80,"Press D to blow wind to right")
+  PRINTF(1, 90,"Press Z to enable disable collision on first animation")*/
                                           
   copyToMainBpl(vampireitalialogo_data,2,3);                          // Screen 2 vampireitalia logo 320px 8 cols
 
@@ -247,6 +237,7 @@ void gameGsCreate(void) {
   PRINTF(3, 70,"- Ore 14.30 : Concerto Mistantropixel su c64+cyntcart")
   PRINTF(3, 80,"- Ore 15 : Talk su qualcosa, distribuzione gadgets")
   PRINTF(3, 90,"- Ore 16 : Foto ricordo e tutti a casa")
+  PRINTF(3, 110,"EVENTO RINVIATO AL PROSSIMO ANNO CAUSA CORONAVIRUS")
                                             
   copyToMainBpl(Aded320x224_1_data,4,0);                              // Screen 4 d&d 640px part one
   copyToMainBpl(Aded320x224_2_data,5,0);                              // Screen 5 d&d 640px part two
@@ -274,7 +265,6 @@ void gameGsCreate(void) {
   // we need a camera to simulate scrolling
   s_pCamera = s_pScoreBuffer->pCamera;
   s_pCameraMain = s_pMainBuffer->pCamera;
-  //cameraMoveBy(s_pCamera, 1, 0);
 
   // We don't need anything from OS anymore
   systemUnuse();
@@ -347,6 +337,8 @@ if (1)
 
   copProcessBlocks();
 
+  // Init collision stuff
+  CollisionInit();
   //nextStage();
 }
 
@@ -361,10 +353,6 @@ void gameGsLoop(void) {
   mt_music();
 //#endif
 
- // g_pCustom->color[0] = 0x0FF;
-  
-    //g_pCustom->color[0] = 0xf00;
-
   // This will loop forever until you "pop" or change gamestate
   // or close the game
   UBYTE isAnyPressed = (
@@ -375,6 +363,25 @@ void gameGsLoop(void) {
     gameClose();
     return ;
   }
+
+  // Collision ON/OFF
+  if (keyUse(KEY_Z))
+  {
+
+    DeleteTextCollision();
+
+    if (g_ubIsCollisionEnabled)
+    {
+      g_ubIsCollisionEnabled=0;
+      PrintTextCollisionOff();
+    }
+    else
+    {
+      g_ubIsCollisionEnabled=1;
+      PrintTextCollisionOn();
+    }
+  }
+
   s_pStagesFunctions[g_ubStageIndex].g_pStageInputFunction ();
 
   if (1)
@@ -464,6 +471,16 @@ void gameGsLoop(void) {
       changeCopperColor(s_pView,myBlock,vampireitaliapalette_data,8,7);
       //nextStage();
     }
+
+    // Palette for Intermezzov2 logo
+    /*if (s_pCameraMain->uPos.uwX==320+320)
+    {
+      /*changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,12,11);
+      changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,13,12);*//*
+      changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,14,13);
+      changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,15,14);
+    }*/
+
     // D&D palette
     else if (s_pCameraMain->uPos.uwX==960)
     {
@@ -480,8 +497,8 @@ void gameGsLoop(void) {
       changeCopperColor(s_pView,myBlock,Aded320x224palette_data,11,10);
       changeCopperColor(s_pView,myBlock,Aded320x224palette_data,12,11);
       changeCopperColor(s_pView,myBlock,Aded320x224palette_data,13,12);
-      changeCopperColor(s_pView,myBlock,Aded320x224palette_data,14,13);
-      changeCopperColor(s_pView,myBlock,Aded320x224palette_data,15,14);
+      //changeCopperColor(s_pView,myBlock,Aded320x224palette_data,14,13);
+      //changeCopperColor(s_pView,myBlock,Aded320x224palette_data,15,14);
     }
 
     else if (s_pCameraMain->uPos.uwX==1920)
@@ -569,30 +586,6 @@ void copyToMainBpl(const unsigned char* pData,const UBYTE ubSlot,const UBYTE ubM
   return ;
 }
 
-/*void bounce()
-{
-  int x=fix16_to_int(location.x);
-  int y=fix16_to_int(location.y);
-
-  if (x>300||x<10)
-    velocity.x=fix16_mul(velocity.x,fix16_from_int(-1));
-
-  if (y>220||y<10)
-    velocity.y=fix16_mul(velocity.y,fix16_from_int(-1));
-}*/
-
-/*void reposition()
-{
-  int x=fix16_to_int(location2.x);
-  int y=fix16_to_int(location2.y);
-
-  if (x>300||x<10)
-    location2.x=fix16_from_int(10);
-
-  if (y>220||y<10)
-    location2.y=fix16_from_int(10);
-}*/
-
 tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYTE* pSpriteData,ULONG ulSpriteSize) {
   static tCopBlock *pBlockSprites=NULL;
   tCopMoveCmd * pMoveCmd=NULL;
@@ -602,7 +595,7 @@ tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYT
     systemSetDma(DMAB_SPRITE, 1);
 
     // Reset tAceSprite array
-    logWrite("copBlockEnableSprite - resetting all sprites\n");
+    //logWrite("copBlockEnableSprite - resetting all sprites\n");
     for (UBYTE ubIterator=0;ubIterator<ACE_MAXSPRITES;ubIterator++)
     {
       //memset(&s_pAceSprites[ubIterator],0,sizeof(tAceSprite));
@@ -638,10 +631,10 @@ tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYT
   //Make some room for sprite extra information
   ulSpriteSize+=8;
    
-  logWrite("copBlockEnableSprite - Allocate : %d bytes for sprite %d\n",ulSpriteSize,fubSpriteIndex);
+  //logWrite("copBlockEnableSprite - Allocate : %d bytes for sprite %d\n",ulSpriteSize,fubSpriteIndex);
   s_pAceSprites[fubSpriteIndex].pSpriteData = (UBYTE*)AllocMem(ulSpriteSize,MEMF_CHIP);
   memset (s_pAceSprites[fubSpriteIndex].pSpriteData,0,ulSpriteSize);
-  logWrite("copBlockEnableSprite - Allocated mem : %x\n",s_pAceSprites[fubSpriteIndex].pSpriteData);
+  //logWrite("copBlockEnableSprite - Allocated mem : %x\n",s_pAceSprites[fubSpriteIndex].pSpriteData);
   
   const UBYTE ubVStart=0x30;
   const UBYTE ubHStart=0x90;
@@ -752,7 +745,7 @@ tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYT
 
   if (fubSpriteIndex==5)
   {
-    // Start of sprite 4
+    // Start of sprite 5
 
     pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[10];
     pMoveCmd->bfValue=ulAddr >> 16;
@@ -763,51 +756,35 @@ tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYT
     //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
   }
 
+  // Start of sprite 6
+  if (fubSpriteIndex==6)
+  {
+    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[12];
+    pMoveCmd->bfValue=ulAddr >> 16;
+    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[13];
+    pMoveCmd->bfValue=ulAddr & 0xFFFF;
+  }
+
+  // Start of sprite 7
+  if (fubSpriteIndex==7)
+  {
+    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[14];
+    pMoveCmd->bfValue=ulAddr >> 16;
+    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[15];
+    pMoveCmd->bfValue=ulAddr & 0xFFFF;
+  }
+
   //SETSPRITEIMG(fubSpriteIndex,pSpriteData,ulSpriteSize)
 
   return NULL;
 }
 
-
-
-
-
-
-#if 0
-void moverBounce(tMover* pMover)
-{
-  //char buf[100];
-  int x=fix16_to_int(pMover->tLocation.x);
-  int y=fix16_to_int(pMover->tLocation.y);
-
-  //if (g_ubHBounceEnabled && (x>300||x<10))
-  if (g_ubHBounceEnabled && (x>s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit||x<=0))
-  {
-    pMover->tVelocity.x=fix16_mul(pMover->tVelocity.x,fix16_from_int(-1));
-
-     // to do not stop bounce add
-    //pMover->tVelocity.y=fix16_sub(pMover->tVelocity.y,pMover->tAccelleration.y);
-    pMover->tVelocity.x=fix16_sub(pMover->tVelocity.x,pMover->tAccelleration.x);
-  }
-
-  if (g_ubVBounceEnabled && (y>s_pAceSprites[pMover->ubSpriteIndex].iBounceBottomLimit||y<BOUNCE_TOP_LIMIT))
-  {
-    pMover->tVelocity.y=fix16_mul(pMover->tVelocity.y,fix16_from_int(-1));
-    
-    // to do not stop bounce add
-    pMover->tVelocity.y=fix16_sub(pMover->tVelocity.y,pMover->tAccelleration.y);
-    //pMover->tVelocity.x=fix16_sub(pMover->tVelocity.x,pMover->tAccelleration.x);
-    
-    /*fix16_to_str(pMover->tVelocity.y,buf,6);
-    logWrite("Low bounce restarts at %s\n",buf);*/
-  }
-}
-#endif
-
+// Switch to next stage
 void nextStage()
 {
   g_endStageFlag = 0;
   g_ubStageIndex++;
   if (g_ubStageIndex==MAXSTAGES) g_ubStageIndex=0;
   s_pStagesFunctions[g_ubStageIndex].g_pPreStageFunction ();
+  DeleteTextCollision();
 }

@@ -24,6 +24,17 @@ Boston, MA 02111-1307, USA.
 
 #define ACE_MAXSPRITES 8
 
+#define ACE_SPRITE7_COLLISION_FLAG 0x8000
+#define ACE_SPRITE5_COLLISION_FLAG 0x4000
+#define ACE_SPRITE3_COLLISION_FLAG 0x2000
+#define ACE_SPRITE1_COLLISION_FLAG 0x1000
+
+#define ACE_IS_SPRITE_COLLIDING_1_3 g_ACE_COLLISIONS_FLAGS&0x0400
+#define ACE_IS_SPRITE_COLLIDING_3_1 g_ACE_COLLISIONS_FLAGS&0x0400
+
+#define ACE_IS_SPRITE_COLLIDING_3_2 g_ACE_COLLISIONS_FLAGS&0x1000
+#define ACE_IS_SPRITE_COLLIDING_2_3 g_ACE_COLLISIONS_FLAGS&0x1000
+
 typedef struct _tAceSprite {
   UBYTE* pSpriteData;
   ULONG ulSpriteSize;
@@ -37,6 +48,8 @@ typedef struct _tAceSprite {
 } tAceSprite;
 tAceSprite s_pAceSprites[ACE_MAXSPRITES];
 
+UWORD g_ACE_COLLISIONS_FLAGS;
+
 tCameraManager *s_pCameraMain;
 tVPort *s_pVpScore;
 tSimpleBufferManager *s_pMainBuffer;
@@ -48,4 +61,21 @@ void copChangeMove(tCopList *, tCopBlock *, UWORD, volatile void *, UWORD);
 void memBitmapToSprite(UBYTE*, const size_t);
 void spriteMove3(FUBYTE,UWORD,UWORD);
 void SetTrailingSprite(const FUBYTE, const FUBYTE);
+
+inline void SpriteCollisionEnable(const UWORD flags)
+{
+  g_pCustom->clxcon=flags;
+}
+
+inline void SpriteCollisionDisable(const UWORD flags)
+{
+  const UWORD flags2=~flags;
+  g_pCustom->clxcon&=flags2;
+}
+
+inline void SpriteGetCollisions()
+{
+	g_ACE_COLLISIONS_FLAGS=g_pCustom->clxdat;
+}
+
 #endif

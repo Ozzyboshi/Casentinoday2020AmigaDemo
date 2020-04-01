@@ -31,17 +31,17 @@ void moverBounce(tMover* pMover)
     // if right bounce check if next iteration we exit to the right bounce zone, if not force location.x to right limit otherwise we could be stuck on the right
     if (x>s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit)
     {
-	int exitBouncingStage = fix16_to_int(fix16_add( pMover->tLocation.x,pMover->tVelocity.x));
-	if (exitBouncingStage>s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit)
-		pMover->tLocation.x=fix16_from_int(s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit);
+    	int exitBouncingStage = fix16_to_int(fix16_add( pMover->tLocation.x,pMover->tVelocity.x));
+    	if (exitBouncingStage>s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit)
+		  pMover->tLocation.x=fix16_from_int(s_pAceSprites[pMover->ubSpriteIndex].iBounceRightLimit);
     }
 
     // if left bounce check if next iteration we exit to the left bounce zone, if not force location.x to left limit otherwise we could be stuck on the left
     if (x<=0)
     {
-	int exitBouncingStage = fix16_to_int(fix16_add( pMover->tLocation.x,pMover->tVelocity.x));
-	if (exitBouncingStage<=0) 
-		pMover->tLocation.x=fix16_from_int(1);
+    	int exitBouncingStage = fix16_to_int(fix16_add( pMover->tLocation.x,pMover->tVelocity.x));
+    	if (exitBouncingStage<=0) 
+		  pMover->tLocation.x=fix16_from_int(1);
     }
   }
 
@@ -96,10 +96,13 @@ UBYTE moverMove(tMover sMover)
      //g_pCustom->color[0] = 0x0000;
   }
 
-  elem.x=uwLocationXTrail;
-  elem.y=uwLocationYTrail;
-  elem.changed=ubBitsChanged;
-  enqueue(sMover.tQueue, elem);
+  if (uwLocationYTrail<s_pVpMain->uwHeight-1)
+  {
+    elem.x=uwLocationXTrail;
+    elem.y=uwLocationYTrail;
+    elem.changed=ubBitsChanged;
+    enqueue(sMover.tQueue, elem);
+  }
 #endif
 
   return 0;
@@ -115,6 +118,9 @@ void spriteVectorInit(tMover* pMover,const UBYTE ubSpriteIndex,const int iLx, co
   pMover->tVelocity.x=fix16_from_int(iSx);
   pMover->tVelocity.y=fix16_from_int(iSy);
 
+  pMover->tAccelleration.x=fix16_from_int(0);
+  pMover->tAccelleration.y=fix16_from_int(0);
+
   pMover->tMass=fix16_from_int((int)uiMass);
 
 #ifdef TRAIL
@@ -124,6 +130,9 @@ void spriteVectorInit(tMover* pMover,const UBYTE ubSpriteIndex,const int iLx, co
 #endif
 
   pMover->ubLocked = 0;
+
+  pMover->tPrevLocation.x=fix16_from_int(0);
+  pMover->tPrevLocation.y=fix16_from_int(0);
 
   /*pMover->tAccelleration.x=fix16_from_int(iAx);
   pMover->tAccelleration.y=fix16_from_int(iAy);*/

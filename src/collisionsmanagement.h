@@ -14,31 +14,14 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 */
 
-#ifndef _STAGES_H_
-#define _STAGES_H_
+
+#ifndef _COLLISIONSMANAGEMENT_H_
+#define _COLLISIONSMANAGEMENT_H_
 
 
-#include "casentino.h"
-#include "physics.h"
-UBYTE g_ubIsCollisionEnabled;
-
-tMover g_Sprite1Vector;
-tMover g_Sprite2Vector;
-tMover g_Sprite3Vector;
-tMover g_Sprite4Vector;
-
-v2d g_Gravity , g_Wind;
-
-void stage1input();
-void stage1pre();
-void stage1();
-void stage2input();
-void stage2pre();
-void stage2();
-
-// Attraction stage prototypes
-void stageAttractionInput();
-void stageAttraction();
-void stageAttractionPre();
+void CollisionInit();
+void PrintTextCollisionOn();
+void PrintTextCollisionOff();
+void DeleteTextCollision();
 
 #endif

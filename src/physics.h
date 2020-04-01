@@ -37,6 +37,8 @@ typedef struct _tMover
 	v2d tVelocity;
 	v2d tAccelleration;
 
+  v2d tPrevLocation;
+
 	fix16_t tMass;
 
 	uint8_t ubLocked;
@@ -46,6 +48,12 @@ typedef struct _tMover
 
 inline static void moverAddVelocityToLocation(tMover* pMover)
 {
+
+  // Save previous location before updating
+  pMover->tPrevLocation.x = pMover->tLocation.x;
+  pMover->tPrevLocation.y = pMover->tLocation.y;
+
+  // Do the update
   v2d_add(&pMover->tLocation,&pMover->tLocation,&pMover->tVelocity);
 }
 

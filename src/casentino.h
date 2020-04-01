@@ -20,24 +20,8 @@ Boston, MA 02111-1307, USA.
 #include <fixmath/fix16.h>
 #include "vectors.h"
 #include "queues.h"
-/*
-typedef struct _tMover
-{
-	uint8_t ubSpriteIndex;
-	v2d tLocation;
-	v2d tVelocity;
-	v2d tAccelleration;
 
-	fix16_t tMass;
-
-	uint8_t ubLocked;
-
-  struct Queue* tQueue;
-}tMover;*/
-
-//tMover g_Sprite0Vector = { {0,0},{0,0},{0,0} };
-
-
+#define FONT_MAIN_COLOR 14
 #define WIND_MAX_STEP 1
 #define  BOUNCE_TOP_LIMIT 10
 //#define  BOUNCE_BOTTOM_LIMIT 239

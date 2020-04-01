@@ -1,6 +1,8 @@
 CC 			= incbin.sh
 CLEANFILES = uni54.h \
 VampireItalialogo.raw VampireItalialogo.plt \
+intermezzoV2.raw \
+intermezzoV2.plt \
 ball2bpl16x16_frame1.\
 raw ball2bpl16x16_frame2.raw \
 ball2bpl16x16_frame3.raw \
@@ -16,6 +18,8 @@ valkyrie320x244.raw valkyrie320x244palette.plt
 noinst_SCRIPTS = uni54 \
 paper_cut.h \
 VampireItalialogo.h VampireItalialogopalette.h \
+intermezzoV2.h \
+intermezzoV2_palette.h \
 ball2bpl16x16_frame1.h ball2bpl16x16_frame1_palette.h \
 ball2bpl16x16_frame2.h \
 ball2bpl16x16_frame3.h \
@@ -43,6 +47,14 @@ VampireItalialogopalette.h: VampireItalialogopalette.plt
 	$(CC) $? $@ vampireitaliapalette
 VampireItalialogo.h: VampireItalialogo.raw
 	$(CC) $? $@ vampireitalialogo
+
+intermezzoV2.raw intermezzoV2_palette.plt: intermezzoV2.iff
+	rm -f intermezzoV2.raw intermezzoV2_palette.plt
+	ilbm2raw intermezzoV2.iff intermezzoV2.raw -p intermezzoV2_palette.plt
+intermezzoV2.h: intermezzoV2.raw
+	$(CC) $? $@ intermezzoV2
+intermezzoV2_palette.h: intermezzoV2_palette.plt
+	$(CC) $? $@ intermezzoV2_palette
 
 ball2bpl16x16_frame1.h: ball2bpl16x16_frame1.raw
 	$(CC) $? $@ ball2bpl16x16_frame1

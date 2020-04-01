@@ -18,6 +18,10 @@ Boston, MA 02111-1307, USA.
 
 #include <ace/managers/key.h>
 
+//#define STAGE1_COLORDEBUG
+
+#define SPRITES_TO_COLLIDE ACE_SPRITE5_COLLISION_FLAG|ACE_SPRITE1_COLLISION_FLAG|ACE_SPRITE3_COLLISION_FLAG
+
 fix16_t g_WindStep;
 BYTE bSpriteDirection ;
 
@@ -44,6 +48,7 @@ void stage1input()
     g_Wind.x=0;
     bSpriteDirection=0;
   }
+
   return ;
 }
 
@@ -55,10 +60,119 @@ void stage1pre()
     spriteVectorInit(&g_Sprite4Vector,4,BIG_BALL_START_POSITION_X,85,0,0,BIG_BALL_MASS);
     g_ubVBounceEnabled=1;
     g_Wind.x=0;
+    SpriteCollisionEnable(SPRITES_TO_COLLIDE);
 }
 
 void stage1()
 {
+    static UBYTE ubSprite3Colliding = 0;
+    static UBYTE ubSprite2Colliding = 0;
+    static UBYTE ubSprite1Colliding = 0;
+    
+    if (g_ubIsCollisionEnabled )
+    {
+        SpriteCollisionEnable(SPRITES_TO_COLLIDE);
+        SpriteGetCollisions();
+
+        //#ifdef ALESSIOTEST
+        if ( ACE_IS_SPRITE_COLLIDING_3_2 )
+        {
+             
+            // Sprite 2 o r sprite 3 colliding (or both)? Get the distance
+            v2d tSprite2VectorDistance;
+            v2d tSprite3VectorDistance;
+            v2d_sub(&tSprite2VectorDistance,&g_Sprite2Vector.tLocation,&g_Sprite4Vector.tLocation);
+            v2d_sub(&tSprite3VectorDistance,&g_Sprite3Vector.tLocation,&g_Sprite4Vector.tLocation);
+
+            // Get mag
+            fix16_t tSprite2VectorMag = fix16_abs(v2d_get_mag(&tSprite2VectorDistance));
+            fix16_t tSprite3VectorMag = fix16_abs(v2d_get_mag(&tSprite3VectorDistance));
+
+            //g_Sprite4Vector.tVelocity.x=fix16_mul(g_Sprite4Vector.tVelocity.x,fix16_from_int(-1));
+            if (ubSprite2Colliding==0 && tSprite2VectorMag<tSprite3VectorMag)
+            {
+                if (fix16_abs(g_Sprite2Vector.tVelocity.x)>fix16_abs(g_Sprite2Vector.tVelocity.y))
+                {
+#ifdef STAGE1_COLORDEBUG
+                    g_pCustom->color[0] = 0x0F00;
+#endif
+                    g_Sprite2Vector.tVelocity.x=fix16_mul(g_Sprite2Vector.tVelocity.x,fix16_from_int(-1));
+                }
+                //g_Sprite4Vector.tVelocity.y=fix16_mul(g_Sprite4Vector.tVelocity.y,fix16_from_int(-1));
+                else 
+                {
+#ifdef STAGE1_COLORDEBUG
+                    g_pCustom->color[0] = 0x00F0;
+#endif
+                    g_Sprite2Vector.tVelocity.y=fix16_mul(g_Sprite2Vector.tVelocity.y,fix16_from_int(-1));
+                }
+                ubSprite2Colliding=1;
+            }
+
+            if (ubSprite3Colliding==0 && tSprite3VectorMag<=tSprite2VectorMag)
+            {
+                if (fix16_abs(g_Sprite3Vector.tVelocity.x)>fix16_abs(g_Sprite3Vector.tVelocity.y))
+                {
+#ifdef STAGE1_COLORDEBUG
+                    g_pCustom->color[0] = 0x0F00;
+#endif                    
+                    g_Sprite3Vector.tVelocity.x=fix16_mul(g_Sprite3Vector.tVelocity.x,fix16_from_int(-1));
+                }
+                //g_Sprite4Vector.tVelocity.y=fix16_mul(g_Sprite4Vector.tVelocity.y,fix16_from_int(-1));
+                else
+                {
+#ifdef STAGE1_COLORDEBUG
+                    g_pCustom->color[0] = 0x00F0;
+#endif                    
+                    g_Sprite3Vector.tVelocity.y=fix16_mul(g_Sprite3Vector.tVelocity.y,fix16_from_int(-1));
+                }
+                ubSprite3Colliding=1;
+            }
+            /*g_Sprite4Vector.ubLocked=1;
+            g_Sprite2Vector.ubLocked=1;*/
+            //g_Sprite4Vector.tLocation.x = g_Sprite4Vector.tPrevLocation.x;
+            //g_Sprite4Vector.tLocation.y = g_Sprite4Vector.tPrevLocation.y;
+            //g_Sprite2Vector.tLocation.x = g_Sprite2Vector.tPrevLocation.x;
+            //g_Sprite2Vector.tLocation.x = g_Sprite2Vector.tPrevLocation.x;
+        }
+        else if (ubSprite2Colliding||ubSprite3Colliding)
+        {
+            ubSprite2Colliding=0;
+            ubSprite3Colliding=0;
+            g_pCustom->color[0] = 0x0000;
+        }
+        //#endif
+
+        if (ACE_IS_SPRITE_COLLIDING_3_1 )
+        {
+            if (ubSprite1Colliding==0)
+            {
+                if (fix16_abs(g_Sprite1Vector.tVelocity.x)>fix16_abs(g_Sprite1Vector.tVelocity.y))
+                {
+#ifdef STAGE1_COLORDEBUG
+                    g_pCustom->color[0] = 0x0F00;
+#endif
+                    g_Sprite1Vector.tVelocity.x=fix16_mul(g_Sprite1Vector.tVelocity.x,fix16_from_int(-1));
+                }
+                else 
+                {
+#ifdef STAGE1_COLORDEBUG
+                    g_pCustom->color[0] = 0x00F0;
+#endif
+                    g_Sprite1Vector.tVelocity.y=fix16_mul(g_Sprite1Vector.tVelocity.y,fix16_from_int(-1));
+                }
+                ubSprite1Colliding=1;
+            }
+        }
+        else if (ubSprite1Colliding)
+        {
+#ifdef STAGE1_COLORDEBUG
+            g_pCustom->color[0] = 0x0000;
+#endif
+            ubSprite1Colliding=0;
+        }
+    }
+
 	if (g_Sprite1Vector.ubLocked==0)
     {
     spriteVectorApplyForce(&g_Sprite1Vector,&g_Gravity);

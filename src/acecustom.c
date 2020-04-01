@@ -28,6 +28,7 @@ UBYTE moveCameraByFraction(tCameraManager *pManager, WORD wDx, WORD wDy, const U
 
 UBYTE printCursorPixel(tSimpleBufferManager* pMainBuffer,UWORD uwXCoordinate,UWORD uwYCoordinate,const UWORD uwOffset)
 {
+  //if (uwYCoordinate>224) gameClose();
   UBYTE ris=0;
   UBYTE* primo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[0]);
   UBYTE* secondo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[1]);
@@ -88,6 +89,9 @@ UBYTE restorePixels(tSimpleBufferManager* pMainBuffer,struct MemPoint elem,const
   UBYTE* secondo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[1]);
   UBYTE* terzo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[2]);
   UBYTE* quarto = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[3]);
+
+  //if (uwYCoordinate>224) gameClose();
+
 
   //UWORD offset = 40*NUM_IMAGES;
   
@@ -241,4 +245,5 @@ void SetTrailingSprite(const FUBYTE bTrailingSpriteIndex,const FUBYTE fubSpriteI
   s_pAceSprites[fubSpriteIndex].iBounceRightLimit-=16;
   s_pAceSprites[fubSpriteIndex].uwSpriteCenter+=8;
 }
+
 
