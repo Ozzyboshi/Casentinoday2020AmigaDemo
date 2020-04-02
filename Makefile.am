@@ -1,1 +1,1 @@
-SUBDIRS = _res src
+SUBDIRS = _res src floppy

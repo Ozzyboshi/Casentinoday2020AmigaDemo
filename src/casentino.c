@@ -472,15 +472,6 @@ void gameGsLoop(void) {
       //nextStage();
     }
 
-    // Palette for Intermezzov2 logo
-    /*if (s_pCameraMain->uPos.uwX==320+320)
-    {
-      /*changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,12,11);
-      changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,13,12);*//*
-      changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,14,13);
-      changeCopperColor(s_pView,myBlock,intermezzoV2_palette_data,15,14);
-    }*/
-
     // D&D palette
     else if (s_pCameraMain->uPos.uwX==960)
     {

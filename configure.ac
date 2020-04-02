@@ -40,7 +40,7 @@ if test "${dd}" = no; then
 	AC_MSG_ERROR([Unable to find dd utility]);
 fi
 
-AC_CONFIG_FILES([Makefile src/Makefile _res/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile _res/Makefile floppy/Makefile])
 # asm=vasmm68k_mot
 AC_OUTPUT
 

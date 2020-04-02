@@ -96,7 +96,7 @@ UBYTE moverMove(tMover sMover)
      //g_pCustom->color[0] = 0x0000;
   }
 
-  if (uwLocationYTrail<s_pVpMain->uwHeight-1)
+  if (uwLocationYTrail<=s_pVpMain->uwHeight)
   {
     elem.x=uwLocationXTrail;
     elem.y=uwLocationYTrail;
