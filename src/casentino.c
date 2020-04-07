@@ -62,6 +62,7 @@ Boston, MA 02111-1307, USA.
 #include "stages.h"
 #include "stagesconfiguration.h"
 #include "collisionsmanagement.h"
+#include "customtrigonometry.h"
 
 //#define NUM_IMAGES 8
 #define TOTAL_WIDTH 320*NUM_IMAGES
@@ -93,10 +94,14 @@ static inline void changeCopperColor(tView *s_pView, tCopBlock * myBlock,const u
   copChangeMove(s_pView->pCopList, myBlock, uwCopblockIndex, &g_pCustom->color[uwPaletteColorStart], uwColTmp);
 }
 
+tMover g_Sprite0Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
 tMover g_Sprite1Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
 tMover g_Sprite2Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
 tMover g_Sprite3Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
 tMover g_Sprite4Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
+tMover g_Sprite6Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
+tMover g_Sprite7Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
+
 v2d g_Gravity , g_Wind;
 UBYTE g_ubIsCollisionEnabled = 1;
 
@@ -123,6 +128,7 @@ tSimpleBufferManager *s_pMainBuffer;
 
 static tCopBlock *myBlock;
 
+UBYTE g_ubVBallAnimEnabled = 1;
 UBYTE g_ubVBounceEnabled = 1;
 UBYTE g_ubHBounceEnabled = 1;
 UBYTE g_endStageFlag = 0;
@@ -188,6 +194,21 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[21] = 0x00f0; // Red - not max, a bit dark
   s_pVpScore->pPalette[22] = 0x0bf0;
 
+  // Sprite 2 colors (cursor)
+  s_pVpScore->pPalette[23] = 0x0070; // Gray
+  s_pVpScore->pPalette[24] = 0x00f0; // Red - not max, a bit dark
+  s_pVpScore->pPalette[25] = 0x0bf0;
+
+  // Sprite 3 colors (cursor)
+  s_pVpScore->pPalette[26] = 0x0070; // Gray
+  s_pVpScore->pPalette[27] = 0x00f0; // Red - not max, a bit dark
+  s_pVpScore->pPalette[28] = 0x0bf0;
+
+    // Sprite 4 colors (cursor)
+  s_pVpScore->pPalette[29] = 0x0070; // Gray
+  s_pVpScore->pPalette[30] = 0x00f0; // Red - not max, a bit dark
+  s_pVpScore->pPalette[31] = 0x0bf0;
+
   UWORD uwColTmp;
   uwColTmp=ball2bpl16x16_frame1_palette_data[2];
   uwColTmp=uwColTmp<<8;
@@ -195,6 +216,7 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[17] = uwColTmp;
   s_pVpScore->pPalette[21] = uwColTmp;
   s_pVpScore->pPalette[25] = uwColTmp;
+  s_pVpScore->pPalette[29] = uwColTmp;
 
   uwColTmp=ball2bpl16x16_frame1_palette_data[4];
   uwColTmp=uwColTmp<<8;
@@ -202,6 +224,7 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[18] = uwColTmp;
   s_pVpScore->pPalette[22] = uwColTmp;
   s_pVpScore->pPalette[26] = uwColTmp;
+  s_pVpScore->pPalette[30] = uwColTmp;
 
   uwColTmp=ball2bpl16x16_frame1_palette_data[6];
   uwColTmp=uwColTmp<<8;
@@ -209,6 +232,7 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[19] = uwColTmp;
   s_pVpScore->pPalette[23] = uwColTmp;
   s_pVpScore->pPalette[27] = uwColTmp;
+  s_pVpScore->pPalette[31] = uwColTmp;
 
   s_pFontUI = fontCreateFromMem((UBYTE*)uni54_data);
   if (s_pFontUI==NULL) return;
@@ -269,8 +293,11 @@ void gameGsCreate(void) {
   // We don't need anything from OS anymore
   systemUnuse();
 
-if (1)
-{
+  // Init custom trig functions
+  fix16_sinlist_init();
+  fix16_coslist_init();
+
+  // Copperlist palette for images
   myBlock = copBlockCreate(s_pView->pCopList, 15, 0, 76);
   for (UBYTE ubCounter=1;ubCounter<16;ubCounter++)
   { 
@@ -287,7 +314,6 @@ if (1)
   copMove(s_pView->pCopList, myBlock2,&g_pCustom->color[1],0x0888 );
   copMove(s_pView->pCopList, myBlock2,&g_pCustom->color[2],0x0800 );
   copMove(s_pView->pCopList, myBlock2,&g_pCustom->color[3],0x0008 );
-}
 
   // Prepare ball sprite frames
   memBitmapToSprite((UBYTE*)ball2bpl16x16_frame1_data, ball2bpl16x16_frame1_size);
@@ -309,6 +335,21 @@ if (1)
 //#ifdef SOUND  
   mt_init(g_tPapercutMod_data);
 //#endif
+
+  /*spriteVectorInit(&g_Sprite6Vector,6,215,115,0,0,LITTLE_BALLS_MASS);
+  copBlockEnableSpriteFull(s_pView->pCopList, 6, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
+  memcpy(s_pAceSprites[6].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+  spriteMove3(6,150,150);
+
+  spriteVectorInit(&g_Sprite7Vector,7,215,115,0,0,LITTLE_BALLS_MASS);
+  copBlockEnableSpriteFull(s_pView->pCopList, 7, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
+  memcpy(s_pAceSprites[7].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+  spriteMove3(7,0,0);
+
+  spriteVectorInit(&g_Sprite0Vector,0,45,115,0,0,LITTLE_BALLS_MASS);
+  copBlockEnableSpriteFull(s_pView->pCopList, 0, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
+  memcpy(s_pAceSprites[0].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+  spriteMove3(0,100,100);*/
 
   spriteVectorInit(&g_Sprite1Vector,1,125,115,0,0,LITTLE_BALLS_MASS);
   copBlockEnableSpriteFull(s_pView->pCopList, 1, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
@@ -364,6 +405,10 @@ void gameGsLoop(void) {
     return ;
   }
 
+  /*if(keyUse(KEY_C)) {
+    copDumpBlocks();
+  }*/
+
   // Collision ON/OFF
   if (keyUse(KEY_Z))
   {
@@ -391,40 +436,43 @@ void gameGsLoop(void) {
 #endif
 
     // animate sprites
-    if (bSpriteCounter==0)         memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
-    else if (bSpriteCounter==1)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
-    else if (bSpriteCounter==2)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
-    else if (bSpriteCounter==3)
+    if (g_ubVBallAnimEnabled)
     {
-      memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame1_1_data,sizeof(ball2bpl32x32_frame1_1_data));
-      memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame1_2_data,sizeof(ball2bpl32x32_frame1_2_data));
-    }
-    
-    else if (bSpriteCounter==20) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame2_data,ball2bpl16x16_frame2_size);
-    else if (bSpriteCounter==21) memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame2_data,ball2bpl16x16_frame2_size);
-    else if (bSpriteCounter==22)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame2_data,ball2bpl16x16_frame2_size);
-    else if (bSpriteCounter==23)
-    {
-      memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame2_1_data,sizeof(ball2bpl32x32_frame2_1_data));
-      memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame2_2_data,sizeof(ball2bpl32x32_frame2_2_data));
-    }
-    
-    else if (bSpriteCounter==40) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame3_data,ball2bpl16x16_frame3_size);
-    else if (bSpriteCounter==41)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame3_data,ball2bpl16x16_frame3_size);
-    else if (bSpriteCounter==42)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame3_data,ball2bpl16x16_frame3_size);
-    else if (bSpriteCounter==43)
-    {
-      memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame3_1_data,sizeof(ball2bpl32x32_frame3_1_data));
-      memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame3_2_data,sizeof(ball2bpl32x32_frame3_2_data));
-    }
+      if (bSpriteCounter==0)         memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+      else if (bSpriteCounter==1)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+      else if (bSpriteCounter==2)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+      else if (bSpriteCounter==3)
+      {
+        memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame1_1_data,sizeof(ball2bpl32x32_frame1_1_data));
+        memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame1_2_data,sizeof(ball2bpl32x32_frame1_2_data));
+      }
+      
+      else if (bSpriteCounter==20) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame2_data,ball2bpl16x16_frame2_size);
+      else if (bSpriteCounter==21) memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame2_data,ball2bpl16x16_frame2_size);
+      else if (bSpriteCounter==22)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame2_data,ball2bpl16x16_frame2_size);
+      else if (bSpriteCounter==23)
+      {
+        memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame2_1_data,sizeof(ball2bpl32x32_frame2_1_data));
+        memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame2_2_data,sizeof(ball2bpl32x32_frame2_2_data));
+      }
+      
+      else if (bSpriteCounter==40) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame3_data,ball2bpl16x16_frame3_size);
+      else if (bSpriteCounter==41)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame3_data,ball2bpl16x16_frame3_size);
+      else if (bSpriteCounter==42)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame3_data,ball2bpl16x16_frame3_size);
+      else if (bSpriteCounter==43)
+      {
+        memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame3_1_data,sizeof(ball2bpl32x32_frame3_1_data));
+        memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame3_2_data,sizeof(ball2bpl32x32_frame3_2_data));
+      }
 
-    else if (bSpriteCounter==60) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame4_data,ball2bpl16x16_frame4_size);
-    else if (bSpriteCounter==61)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame4_data,ball2bpl16x16_frame4_size);
-    else if (bSpriteCounter==62)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame4_data,ball2bpl16x16_frame4_size);
-    else if (bSpriteCounter==63)
-    {
-      memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame4_1_data,sizeof(ball2bpl32x32_frame4_1_data));
-      memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame4_2_data,sizeof(ball2bpl32x32_frame4_2_data));
+      else if (bSpriteCounter==60) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame4_data,ball2bpl16x16_frame4_size);
+      else if (bSpriteCounter==61)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame4_data,ball2bpl16x16_frame4_size);
+      else if (bSpriteCounter==62)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame4_data,ball2bpl16x16_frame4_size);
+      else if (bSpriteCounter==63)
+      {
+        memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame4_1_data,sizeof(ball2bpl32x32_frame4_1_data));
+        memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame4_2_data,sizeof(ball2bpl32x32_frame4_2_data));
+      }
     }
 
     //else if (ubSpriteCounter==80) memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame5_data,ball2bpl16x16_frame5_size);
@@ -515,7 +563,7 @@ void gameGsLoop(void) {
     }
 
 #ifdef COLORDEBUG
-  g_pCustom->color[0] = 0x00F0;
+  g_pCustom->color[0] = 0x0F00;
 #endif
     s_pStagesFunctions[g_ubStageIndex].g_pStageFunction ();
 #ifdef COLORDEBUG
@@ -774,8 +822,13 @@ tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYT
 void nextStage()
 {
   g_endStageFlag = 0;
+
+  // Execute post stage function if there is one
+  if (s_pStagesFunctions[g_ubStageIndex].g_pPostStageFunction) s_pStagesFunctions[g_ubStageIndex].g_pPostStageFunction ();
+
   g_ubStageIndex++;
   if (g_ubStageIndex==MAXSTAGES) g_ubStageIndex=0;
   s_pStagesFunctions[g_ubStageIndex].g_pPreStageFunction ();
   DeleteTextCollision();
+
 }

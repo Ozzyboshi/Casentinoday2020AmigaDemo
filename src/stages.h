@@ -17,7 +17,6 @@ Boston, MA 02111-1307, USA.
 #ifndef _STAGES_H_
 #define _STAGES_H_
 
-
 #include "casentino.h"
 #include "physics.h"
 UBYTE g_ubIsCollisionEnabled;
@@ -40,5 +39,11 @@ void stage2();
 void stageAttractionInput();
 void stageAttraction();
 void stageAttractionPre();
+
+// 3d Cube stage prototypes
+void stage3dCubeInput();
+void stage3dCubePre();
+void stage3dCube();
+void stage3dCubePost();
 
 #endif

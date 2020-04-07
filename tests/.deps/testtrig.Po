@@ -1,0 +1,130 @@
+testtrig.o: testtrig.c /opt/amiga/m68k-amigaos/libnix/include/stdio.h \
+ /opt/amiga/m68k-amigaos/libnix/include/string.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/cdefs.h \
+ /opt/amiga/m68k-amigaos/sys-include/machine/_default_types.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/features.h \
+ /opt/amiga/m68k-amigaos/libnix/include/_newlib_version.h \
+ /opt/amiga/lib/gcc/m68k-amigaos/6.5.0b/include/stddef.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/types.h \
+ /opt/amiga/m68k-amigaos/sys-include/_ansi.h \
+ /opt/amiga/m68k-amigaos/sys-include/newlib.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/config.h \
+ /opt/amiga/m68k-amigaos/sys-include/machine/ieeefp.h \
+ /opt/amiga/m68k-amigaos/sys-include/machine/_types.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_types.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/lock.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_stdint.h \
+ /opt/amiga/m68k-amigaos/sys-include/machine/endian.h \
+ /opt/amiga/m68k-amigaos/sys-include/machine/_endian.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/select.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_sigset.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_timeval.h \
+ /opt/amiga/m68k-amigaos/ndk-include/devices/timer.h \
+ /opt/amiga/m68k-amigaos/ndk-include/exec/types.h \
+ /opt/amiga/m68k-amigaos/ndk-include/exec/io.h \
+ /opt/amiga/m68k-amigaos/ndk-include/exec/ports.h \
+ /opt/amiga/m68k-amigaos/ndk-include/exec/nodes.h \
+ /opt/amiga/m68k-amigaos/ndk-include/exec/lists.h \
+ /opt/amiga/m68k-amigaos/ndk-include/exec/tasks.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/timespec.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_timespec.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_pthreadtypes.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/sched.h \
+ /opt/amiga/m68k-amigaos/sys-include/machine/types.h \
+ /opt/amiga/m68k-amigaos/libnix/include/strsup.h \
+ /opt/amiga/lib/gcc/m68k-amigaos/6.5.0b/include/stdarg.h \
+ ../src/customtrigonometry.h ../src/matrix.h \
+ /opt/amiga/m68k-amigaos/sys-include/inttypes.h \
+ /opt/amiga/m68k-amigaos/sys-include/sys/_intsup.h \
+ /opt/amiga/m68k-amigaos/sys-include/_ansi.h \
+ /opt/amiga/m68k-amigaos/sys-include/stdint.h \
+ /opt/amiga/m68k-amigaos/sys-include/xlocale.h \
+ /opt/amiga/include/fixmath/fix16.h ../src/vectors.h
+
+/opt/amiga/m68k-amigaos/libnix/include/stdio.h:
+
+/opt/amiga/m68k-amigaos/libnix/include/string.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/cdefs.h:
+
+/opt/amiga/m68k-amigaos/sys-include/machine/_default_types.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/features.h:
+
+/opt/amiga/m68k-amigaos/libnix/include/_newlib_version.h:
+
+/opt/amiga/lib/gcc/m68k-amigaos/6.5.0b/include/stddef.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/types.h:
+
+/opt/amiga/m68k-amigaos/sys-include/_ansi.h:
+
+/opt/amiga/m68k-amigaos/sys-include/newlib.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/config.h:
+
+/opt/amiga/m68k-amigaos/sys-include/machine/ieeefp.h:
+
+/opt/amiga/m68k-amigaos/sys-include/machine/_types.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_types.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/lock.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_stdint.h:
+
+/opt/amiga/m68k-amigaos/sys-include/machine/endian.h:
+
+/opt/amiga/m68k-amigaos/sys-include/machine/_endian.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/select.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_sigset.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_timeval.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/devices/timer.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/exec/types.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/exec/io.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/exec/ports.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/exec/nodes.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/exec/lists.h:
+
+/opt/amiga/m68k-amigaos/ndk-include/exec/tasks.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/timespec.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_timespec.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_pthreadtypes.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/sched.h:
+
+/opt/amiga/m68k-amigaos/sys-include/machine/types.h:
+
+/opt/amiga/m68k-amigaos/libnix/include/strsup.h:
+
+/opt/amiga/lib/gcc/m68k-amigaos/6.5.0b/include/stdarg.h:
+
+../src/customtrigonometry.h:
+
+../src/matrix.h:
+
+/opt/amiga/m68k-amigaos/sys-include/inttypes.h:
+
+/opt/amiga/m68k-amigaos/sys-include/sys/_intsup.h:
+
+/opt/amiga/m68k-amigaos/sys-include/_ansi.h:
+
+/opt/amiga/m68k-amigaos/sys-include/stdint.h:
+
+/opt/amiga/m68k-amigaos/sys-include/xlocale.h:
+
+/opt/amiga/include/fixmath/fix16.h:
+
+../src/vectors.h:

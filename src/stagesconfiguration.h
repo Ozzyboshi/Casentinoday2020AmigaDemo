@@ -14,12 +14,13 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 */
 
-#define MAXSTAGES 3 // Max num of stages inside the demo (progressive order)
+#define MAXSTAGES 4 // Max num of stages inside the demo (progressive order)
 
 typedef struct _tStageManager {
   void (*g_pPreStageFunction) ();
   void (*g_pStageFunction) ();
   void (*g_pStageInputFunction) ();
+  void (*g_pPostStageFunction) ();
 } tStageManager;
 
 tStageManager s_pStagesFunctions[]={
@@ -28,21 +29,31 @@ tStageManager s_pStagesFunctions[]={
   {
   	.g_pPreStageFunction = stage1pre, 
   	.g_pStageFunction=stage1, 
-  	.g_pStageInputFunction=stage1input
+  	.g_pStageInputFunction=stage1input,
+    .g_pPostStageFunction = NULL
   },
 
-  // Stage 2 - friction
+  // Stage 2 - 3dcube
+  {
+  	.g_pPreStageFunction = stage3dCubePre, 
+  	.g_pStageFunction=stage3dCube, 
+  	.g_pStageInputFunction=stage3dCubeInput,
+    .g_pPostStageFunction = stage3dCubePost
+  },
+
+  // Stage 3 - friction
   {
   	.g_pPreStageFunction = stage2pre,
   	.g_pStageFunction=stage2,
-  	.g_pStageInputFunction=stage2input
+  	.g_pStageInputFunction=stage2input,
+    .g_pPostStageFunction = NULL
   },
 
-  // Stage 3 - attraction
+  // Stage 4 - attraction
   {
     .g_pPreStageFunction = stageAttractionPre,
     .g_pStageFunction=stageAttraction,
-    .g_pStageInputFunction=stageAttractionInput
+    .g_pStageInputFunction=stageAttractionInput,
+    .g_pPostStageFunction = NULL
   }
-  
 };

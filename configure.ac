@@ -1,13 +1,16 @@
 AC_INIT([casentino2020],[0.1])
 
-AM_INIT_AUTOMAKE([dist-zip silent-rules])
+AM_INIT_AUTOMAKE([dist-zip silent-rules subdir-objects])
 
 AC_CONFIG_SRCDIR([src/main.c])
 
 AC_PROG_CC([m68k-amigaos-gcc])
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -O3 -DNDEBUG -std=gnu11')
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -Os')
+#AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -ffast-math -DAMIGA -DACE_DEBUG=ON -Wall -Wextra -O3')
+
 AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -ffast-math -DAMIGA -Wall -Wextra -O3')
+
 
 # Need ace include dir to build the prject
 AC_CHECK_HEADERS([stdlib.h ace/managers/key.h ace/managers/game.h ace/utils/chunky.h ace/managers/viewport/simplebuffer.h],[have_ace_includes=yes],[have_ace_includes=no])
@@ -40,8 +43,11 @@ if test "${dd}" = no; then
 	AC_MSG_ERROR([Unable to find dd utility]);
 fi
 
-AC_CONFIG_FILES([Makefile src/Makefile _res/Makefile floppy/Makefile])
+AC_CONFIG_FILES([Makefile src/Makefile _res/Makefile floppy/Makefile tests/Makefile])
 # asm=vasmm68k_mot
+
+# AC_DEFINE([ACE_DEBUG], [ON], [Debug on])
+
 AC_OUTPUT
 
 echo \

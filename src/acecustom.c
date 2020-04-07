@@ -28,7 +28,7 @@ UBYTE moveCameraByFraction(tCameraManager *pManager, WORD wDx, WORD wDy, const U
 
 UBYTE printCursorPixel(tSimpleBufferManager* pMainBuffer,UWORD uwXCoordinate,UWORD uwYCoordinate,const UWORD uwOffset)
 {
-  //if (uwYCoordinate>224) gameClose();
+  if (uwYCoordinate>224) return 0;
   UBYTE ris=0;
   UBYTE* primo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[0]);
   UBYTE* secondo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[1]);
@@ -41,7 +41,6 @@ UBYTE printCursorPixel(tSimpleBufferManager* pMainBuffer,UWORD uwXCoordinate,UWO
   quarto+=uwOffset*uwYCoordinate;
 
   UBYTE resto=(UBYTE)uwXCoordinate&7;
-  //UBYTE temp=uwXCoordinate>>3;
   UWORD temp=uwXCoordinate>>3;
 
   primo+=temp;
@@ -90,7 +89,7 @@ UBYTE restorePixels(tSimpleBufferManager* pMainBuffer,struct MemPoint elem,const
   UBYTE* terzo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[2]);
   UBYTE* quarto = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[3]);
 
-  //if (uwYCoordinate>224) gameClose();
+  if (uwYCoordinate>224) return 0;
 
 
   //UWORD offset = 40*NUM_IMAGES;

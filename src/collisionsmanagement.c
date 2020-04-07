@@ -294,19 +294,18 @@ void PrintTextCollisionOn()
 {
 	struct MemPoint elem;
 
-    if (isEmpty(tCollisionSignQueue))
-    {
-      UWORD* uwTextCoordsPtr = &uwTextCollOnCoordsArray[0];
+  if (isEmpty(tCollisionSignQueue))
+  {
+    UWORD* uwTextCoordsPtr = &uwTextCollOnCoordsArray[0];
       
-      while (* uwTextCoordsPtr)
-      {
-        elem.x=s_pCameraMain->uPos.uwX+(UWORD)*uwTextCoordsPtr++;
-        elem.y=((UWORD)*uwTextCoordsPtr++) - s_pVpScore->uwHeight;
-        elem.changed = printCursorPixel(s_pMainBuffer,elem.x,elem.y,40*NUM_IMAGES);
-        enqueue(tCollisionSignQueue, elem);
-      }
+    while (* uwTextCoordsPtr)
+    {
+      elem.x=s_pCameraMain->uPos.uwX+(UWORD)*uwTextCoordsPtr++;
+      elem.y=((UWORD)*uwTextCoordsPtr++) - s_pVpScore->uwHeight;
+      elem.changed = printCursorPixel(s_pMainBuffer,elem.x,elem.y,40*NUM_IMAGES);
+      enqueue(tCollisionSignQueue, elem);
     }
-    
+  }  
 }
 
 void PrintTextCollisionOff()
@@ -332,8 +331,8 @@ void DeleteTextCollision()
 {
 	struct MemPoint elem;
 	while (!isEmpty(tCollisionSignQueue))
-      {
-        elem = dequeue(tCollisionSignQueue);
-        restorePixels(s_pMainBuffer,elem,40*NUM_IMAGES);
-      }
+  {
+    elem = dequeue(tCollisionSignQueue);
+    restorePixels(s_pMainBuffer,elem,40*NUM_IMAGES);
+  }
 }
