@@ -165,7 +165,7 @@ void stage3dCubePre()
     
     changeSpritePalette();
 
-    if (SysBase->AttnFlags & AFF_68010)  fastCpu=1;
+    //if (SysBase->AttnFlags & AFF_68010)  fastCpu=1;
 }
 
 void stage3dCube()
@@ -259,7 +259,9 @@ void stage3dCube()
 
     else
     {
-        if (frameNum==1)
+        start=frameNum;
+        end=frameNum+1;
+        /*if (frameNum==1)
         {
             start=2;
             end = POINT_ARRAY_LENGTH-4;
@@ -275,7 +277,7 @@ void stage3dCube()
         {
             start = 6;
             end = POINT_ARRAY_LENGTH;
-        }
+        }*/
     }
 
     for (int i=start;i<end;i++)
@@ -320,7 +322,7 @@ void stage3dCube()
     //g_tRotationAngle = fix16_add(g_tRotationAngle,fix16_from_int(1));
     
     frameNum++;
-    if (frameNum>=4)
+    if (frameNum>=8)
     { 
         frameNum=0;
         g_iRotationAngle++;
@@ -617,7 +619,7 @@ void blitLine2(
         UWORD uwBltSize = (wDx << 6) + 66;
         UWORD uwBltCon0 = ror16(x1&15, 4);
         ULONG ulDataOffs = pDst->BytesPerRow * y1 + ((x1 >> 3) & ~1);
-        if (fastCpu) blitWait();
+        blitWait();
         g_pCustom->bltafwm = -1;
         g_pCustom->bltalwm = -1;
         g_pCustom->bltadat = 0x8000;     
@@ -633,7 +635,7 @@ g_pCustom->bltbdat = uwPattern;
                 UBYTE *pData = pDst->Planes[ubPlane] + ulDataOffs; 
                 UWORD uwOp = ((ubColor & BV(ubPlane)) ? BLIT_LINE_OR : BLIT_LINE_ERASE);
 
-                if (fastCpu) blitWait();
+                 blitWait();
                 //waitblit();
                 g_pCustom->bltcon0 = uwBltCon0 | uwOp;
                 g_pCustom->bltcpt = pData;

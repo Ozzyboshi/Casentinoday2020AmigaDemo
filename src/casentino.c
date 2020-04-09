@@ -184,31 +184,6 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[2] = 0x0800; // Red - not max, a bit dark
   s_pVpScore->pPalette[3] = 0x0008; // Blue - same brightness as red
 
-  // Sprite 0 colors (cursor)
-  /*s_pVpScore->pPalette[17] = 0x0070; // Gray
-  s_pVpScore->pPalette[18] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[19] = 0x0bf0;
-
-  // Sprite 1 colors (cursor)
-  s_pVpScore->pPalette[20] = 0x0070; // Gray
-  s_pVpScore->pPalette[21] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[22] = 0x0bf0;
-
-  // Sprite 2 colors (cursor)
-  s_pVpScore->pPalette[23] = 0x0070; // Gray
-  s_pVpScore->pPalette[24] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[25] = 0x0bf0;
-
-  // Sprite 3 colors (cursor)
-  s_pVpScore->pPalette[26] = 0x0070; // Gray
-  s_pVpScore->pPalette[27] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[28] = 0x0bf0;
-
-    // Sprite 4 colors (cursor)
-  s_pVpScore->pPalette[29] = 0x0070; // Gray
-  s_pVpScore->pPalette[30] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[31] = 0x0bf0;*/
-
 #if 1
   UWORD uwColTmp;
   uwColTmp=ball2bpl16x16_frame1_palette_data[2];
@@ -408,7 +383,8 @@ void gameGsLoop(void) {
     gameClose();
     return ;
   }
-  if (keyUse(KEY_C)) nextStage();
+  // only for debug convenience if (keyUse(KEY_C)) nextStage();
+
   // Collision ON/OFF
   if (keyUse(KEY_Z))
   {
@@ -426,7 +402,7 @@ void gameGsLoop(void) {
       PrintTextCollisionOn();
     }
   }
-
+  
   s_pStagesFunctions[g_ubStageIndex].g_pStageInputFunction ();
 
   if (1)
