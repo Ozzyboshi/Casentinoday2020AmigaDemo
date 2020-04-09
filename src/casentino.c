@@ -148,7 +148,7 @@ void gameGsCreate(void) {
   // Viewport for score bar - on top of screen
   s_pVpScore = vPortCreate(0,
     TAG_VPORT_VIEW, s_pView, // Required: specify parent view
-    TAG_VPORT_BPP, 4, // Optional: 2 bits per pixel, 4 colors
+    TAG_VPORT_BPP, 5, // Optional: 2 bits per pixel, 4 colors
     TAG_VPORT_HEIGHT, 32, // Optional: let's make it 32px high
   TAG_END); // same syntax as view creation
 
@@ -165,7 +165,7 @@ void gameGsCreate(void) {
   // Now let's do the same for main playfield
   s_pVpMain = vPortCreate(0,
     TAG_VPORT_VIEW, s_pView,
-    TAG_VPORT_BPP, 4, // 2 bits per pixel, 4 colors
+    TAG_VPORT_BPP, 5, // 2 bits per pixel, 4 colors
     // We won't specify height here - viewport will take remaining space.
   TAG_END);
   s_pMainBuffer = simpleBufferCreate(0,
@@ -185,7 +185,7 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[3] = 0x0008; // Blue - same brightness as red
 
   // Sprite 0 colors (cursor)
-  s_pVpScore->pPalette[17] = 0x0070; // Gray
+  /*s_pVpScore->pPalette[17] = 0x0070; // Gray
   s_pVpScore->pPalette[18] = 0x00f0; // Red - not max, a bit dark
   s_pVpScore->pPalette[19] = 0x0bf0;
 
@@ -207,8 +207,9 @@ void gameGsCreate(void) {
     // Sprite 4 colors (cursor)
   s_pVpScore->pPalette[29] = 0x0070; // Gray
   s_pVpScore->pPalette[30] = 0x00f0; // Red - not max, a bit dark
-  s_pVpScore->pPalette[31] = 0x0bf0;
+  s_pVpScore->pPalette[31] = 0x0bf0;*/
 
+#if 1
   UWORD uwColTmp;
   uwColTmp=ball2bpl16x16_frame1_palette_data[2];
   uwColTmp=uwColTmp<<8;
@@ -233,15 +234,17 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[23] = uwColTmp;
   s_pVpScore->pPalette[27] = uwColTmp;
   s_pVpScore->pPalette[31] = uwColTmp;
+#endif
+
 
   s_pFontUI = fontCreateFromMem((UBYTE*)uni54_data);
   if (s_pFontUI==NULL) return;
 
   s_pGlyph = fontCreateTextBitMap(250, s_pFontUI->uwHeight);
 
-  copyToMainBpl(valkyrie320x244_data,0,0);                            // Screen 0 valchirie img 320px
+  copyToMainBpl(valkyrie320x244_data,0,4);                            // Screen 0 valchirie img 320px
 
-  copyToMainBpl(intermezzoV2_data,1,0);                              // Screen 1 image intermezzoV2
+  copyToMainBpl(intermezzoV2_data,1,4);                              // Screen 1 image intermezzoV2
   /*PRINTF(1, 0, "- Showcase Morphos (Ozzyboshi)")                     // Screen 1 empty for text
   PRINTF(1, 10,"- Showcase Vampire (DrProcton)")
   PRINTF(1, 20,"- Showcase A1000 (Z3K)")
@@ -263,8 +266,8 @@ void gameGsCreate(void) {
   PRINTF(3, 90,"- Ore 16 : Foto ricordo e tutti a casa")
   PRINTF(3, 110,"EVENTO RINVIATO AL PROSSIMO ANNO CAUSA CORONAVIRUS")
                                             
-  copyToMainBpl(Aded320x224_1_data,4,0);                              // Screen 4 d&d 640px part one
-  copyToMainBpl(Aded320x224_2_data,5,0);                              // Screen 5 d&d 640px part two
+  copyToMainBpl(Aded320x224_1_data,4,4);                              // Screen 4 d&d 640px part one
+  copyToMainBpl(Aded320x224_2_data,5,4);                              // Screen 5 d&d 640px part two
   PRINTF(6,10,"Code : Ozzyboshi")                                     // Screen 6 empty for text
   PRINTF(6,20,"Background artwork : Dr.Procton")
   PRINTF(6,30,"Ball sprites : Z3k")
@@ -273,7 +276,7 @@ void gameGsCreate(void) {
   PRINTF(6,80,"Source code of this invitintro available at : ")
   PRINTF(6,90,"https://github.com/Ozzyboshi/Casentinoday2020AmigaDemo")
 
-  copyToMainBpl(valkyrie320x244_data,7,0);                            // Screen 7 valchirie img 320px
+  copyToMainBpl(valkyrie320x244_data,7,4);                            // Screen 7 valchirie img 320px
 
   // Init the gravity force
   g_Gravity.x=fix16_div(fix16_from_int(0),fix16_from_int(10));
@@ -381,6 +384,7 @@ void gameGsCreate(void) {
   // Init collision stuff
   CollisionInit();
   //nextStage();
+
 }
 
 void gameGsLoop(void) {
@@ -404,11 +408,7 @@ void gameGsLoop(void) {
     gameClose();
     return ;
   }
-
-  /*if(keyUse(KEY_C)) {
-    copDumpBlocks();
-  }*/
-
+  if (keyUse(KEY_C)) nextStage();
   // Collision ON/OFF
   if (keyUse(KEY_Z))
   {
@@ -828,7 +828,8 @@ void nextStage()
 
   g_ubStageIndex++;
   if (g_ubStageIndex==MAXSTAGES) g_ubStageIndex=0;
+
+  // Execute prestage function
   s_pStagesFunctions[g_ubStageIndex].g_pPreStageFunction ();
   DeleteTextCollision();
-
 }

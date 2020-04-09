@@ -18,7 +18,7 @@ if test "${have_ace_includes}" = no; then
 	AC_MSG_ERROR([Unable to find required ACE include files]);
 fi
 
-AC_SEARCH_LIBS([viewCreate], [acerelease],[have_ace_lib=yes],[have_ace_lib=no])
+AC_SEARCH_LIBS([viewCreate], [acereleaseopt],[have_ace_lib=yes],[have_ace_lib=no])
 if test "${have_ace_lib}" = no; then
 	AC_MSG_ERROR([Unable to find required ACE lib file]);
 fi

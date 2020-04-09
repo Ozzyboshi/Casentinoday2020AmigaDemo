@@ -245,4 +245,30 @@ void SetTrailingSprite(const FUBYTE bTrailingSpriteIndex,const FUBYTE fubSpriteI
   s_pAceSprites[fubSpriteIndex].uwSpriteCenter+=8;
 }
 
+UBYTE printCursorPixel5(tSimpleBufferManager* pMainBuffer,UWORD uwXCoordinate,UWORD uwYCoordinate,const UWORD uwOffset)
+{
+  if (uwYCoordinate>224) return 0;
+  UBYTE ris=0;
+  
+  UBYTE* quinto = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[4]);
+  quinto+=uwOffset*uwYCoordinate;
+
+  UBYTE resto=(UBYTE)uwXCoordinate&7;
+  UWORD temp=uwXCoordinate>>3;
+
+  quinto+=temp;
+
+  temp=~resto;
+  resto=temp&7;
+
+  // Set bit to 1 only if it is zero
+  if (!(((*quinto) >> resto) & 1))
+  {
+    *quinto|=1UL<<resto;
+    ris|=8;
+  }
+
+  return ris;
+}
+
 

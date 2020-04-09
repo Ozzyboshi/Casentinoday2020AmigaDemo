@@ -56,6 +56,7 @@ tSimpleBufferManager *s_pMainBuffer;
 
 UBYTE moveCameraByFraction(tCameraManager *, WORD, WORD, UBYTE, const UBYTE);
 UBYTE printCursorPixel(tSimpleBufferManager*,UWORD,UWORD,const UWORD);
+UBYTE printCursorPixel5(tSimpleBufferManager*,UWORD,UWORD,const UWORD);
 UBYTE restorePixels(tSimpleBufferManager*,struct MemPoint,const UWORD);
 void copChangeMove(tCopList *, tCopBlock *, UWORD, volatile void *, UWORD);
 void memBitmapToSprite(UBYTE*, const size_t);
