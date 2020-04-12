@@ -33,7 +33,7 @@ Boston, MA 02111-1307, USA.
     //const unsigned char* pData,
     const UBYTE ubSlot,const UBYTE ubMaxBitplanes);*/
 
-
+void buildCube(fix16_t);
 void DrawCubeVertex(int,v2d,UBYTE);
 void saveSpritePalette();
 void restoreSpritePalette();
@@ -67,6 +67,9 @@ static struct Queue* tPointCubeQueue8;
 
 static UWORD g_ubVBallXOffset;
 static UWORD g_ubVBallYOffset;
+static fix16_t g_ubVBallSizeRatio;
+static fix16_t g_ubVBallSizeRatioDenom;
+static fix16_t g_ubBallStep;
 
 fix16_t fix16_sinlist[360];
 fix16_t fix16_sinlist_inv[360];
@@ -101,6 +104,22 @@ void stage3dCubeInput()
         g_ubVBallYOffset++;
         if (g_ubVBallYOffset>180) g_ubVBallYOffset=180;
     }
+
+    // Cube resizing - shrinking
+    if (keyUse(KEY_Q))
+    {
+       g_ubVBallSizeRatioDenom = fix16_add(g_ubVBallSizeRatioDenom,g_ubBallStep);
+       if (g_ubVBallSizeRatioDenom>fix16_from_int(3)) g_ubVBallSizeRatioDenom=fix16_from_int(3);
+       g_ubVBallSizeRatio = fix16_div(fix16_from_int(1),g_ubVBallSizeRatioDenom);
+       
+    }
+    // Cube resizing - expanding
+    if (keyUse(KEY_E))
+    {
+       g_ubVBallSizeRatioDenom = fix16_sub(g_ubVBallSizeRatioDenom,g_ubBallStep);
+       if (g_ubVBallSizeRatioDenom<fix16_from_int(1)) g_ubVBallSizeRatioDenom=fix16_from_int(1);
+       g_ubVBallSizeRatio = fix16_div(fix16_from_int(1),g_ubVBallSizeRatioDenom);
+    }
     return ;
 }
 
@@ -108,37 +127,11 @@ void stage3dCubePre()
 {
     saveSpritePalette();
 
-    points[0].x = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[0].y = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[0].z = fix16_from_int(-CUBE_SIDE_LENGTH);
+    buildCube(fix16_from_int(CUBE_SIDE_LENGTH));
 
-    points[1].x = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[1].y = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[1].z = fix16_from_int(-CUBE_SIDE_LENGTH);
-
-    points[2].x = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[2].y = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[2].z = fix16_from_int(-CUBE_SIDE_LENGTH);
-
-    points[3].x = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[3].y = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[3].z = fix16_from_int(-CUBE_SIDE_LENGTH);
-
-    points[4].x = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[4].y = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[4].z = fix16_from_int(CUBE_SIDE_LENGTH);
-
-    points[5].x = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[5].y = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[5].z = fix16_from_int(CUBE_SIDE_LENGTH);
-
-    points[6].x = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[6].y = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[6].z = fix16_from_int(CUBE_SIDE_LENGTH);
-
-    points[7].x = fix16_from_int(-CUBE_SIDE_LENGTH);
-    points[7].y = fix16_from_int(CUBE_SIDE_LENGTH);
-    points[7].z = fix16_from_int(CUBE_SIDE_LENGTH);
+    g_ubBallStep = fix16_div(fix16_from_int(1),fix16_from_int(10));
+    g_ubVBallSizeRatioDenom = fix16_from_int(1);
+    g_ubVBallSizeRatio = fix16_div(fix16_from_int(1),g_ubVBallSizeRatioDenom);
 
     projection.rows = 2;
     projection.columns = 3;
@@ -312,6 +305,10 @@ void stage3dCube()
         //mf16 projection
         projected2dvector.x = fix16_mul(rotatedZ.x,projection.data[0][0]);
         projected2dvector.y = fix16_mul(rotatedZ.y,projection.data[1][1]);
+
+        // Resize
+        projected2dvector.x = fix16_mul(projected2dvector.x,g_ubVBallSizeRatio);
+        projected2dvector.y = fix16_mul(projected2dvector.y,g_ubVBallSizeRatio);
 
         DrawCubeVertex(i,projected2dvector,1);
     }
@@ -691,3 +688,43 @@ void blitClear2(
   }
   return ;
 }*/
+
+void buildCube(fix16_t size)
+{
+    fix16_t sizeInv = fix16_mul(size,fix16_from_int(-1));
+
+    points[0].x = sizeInv;
+    points[0].y = sizeInv;
+    points[0].z = sizeInv;
+
+    points[1].x = size;
+    points[1].y = sizeInv;
+    points[1].z = sizeInv;
+
+    points[2].x = size;
+    points[2].y = size;
+    points[2].z = sizeInv;
+
+    points[3].x = sizeInv;
+    points[3].y = size;
+    points[3].z = sizeInv;
+
+    points[4].x = sizeInv;
+    points[4].y = sizeInv;
+    points[4].z = size;
+
+    points[5].x = size;
+    points[5].y = sizeInv;
+    points[5].z = size;
+
+    points[6].x = size;
+    points[6].y = size;
+    points[6].z = size;
+
+    points[7].x = sizeInv;
+    points[7].y = size;
+    points[7].z = size;
+
+    return ;
+
+}

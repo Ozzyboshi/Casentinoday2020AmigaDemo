@@ -383,12 +383,12 @@ void gameGsLoop(void) {
     gameClose();
     return ;
   }
-  // only for debug convenience if (keyUse(KEY_C)) nextStage();
+  // only for debug convenience 
+  //if (keyUse(KEY_C)) nextStage();
 
   // Collision ON/OFF
   if (keyUse(KEY_Z))
   {
-
     DeleteTextCollision();
 
     if (g_ubIsCollisionEnabled)
