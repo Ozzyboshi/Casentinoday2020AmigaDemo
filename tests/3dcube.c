@@ -16,14 +16,30 @@ Boston, MA 02111-1307, USA.
 
 #include <stdio.h>
 #include <../src/matrix.h>
+#include "../src/customtrigonometry.h"
+
+
+static fix16_t g_tOne;
+static v2d projected2dvectors[4][360];
+/*fix16_t fix16_sinlist[360];
+fix16_t fix16_sinlist_inv[360];
+fix16_t fix16_coslist[360];*/
+
 
 #define POINT_ARRAY_LENGTH 4
 
 void print_v2d_to_stdout(int,v2d);
+void cache_points_build(v3d* ,int );
 
 int main()
 {
    char buf[100];
+
+   g_tOne = fix16_from_int(1);
+
+   // Init custom trig functions
+   fix16_sinlist_init();
+   fix16_coslist_init();
 
    // Points of the cube
    v3d points[POINT_ARRAY_LENGTH] = {
@@ -33,6 +49,20 @@ int main()
       {fix16_from_int(-50), fix16_from_int(50), fix16_from_int(0)}
    };
    
+   for (int i=0;i<4;i++)
+    {
+        v3d point = points[i];
+        cache_points_build(&point,i);
+    }
+   printf("Point 0 Cached:\n");
+   for (int point=0;point<4;point++)
+      for (int angle = 0 ; angle<360 ; angle += 10)
+      {
+         printf("Angle %d: ",angle);
+         print_v2d_to_stdout(point,projected2dvectors[0][angle]);
+         getchar();
+      }
+
    // projection matrix
    mf16 projection = {
       2,  // Rows
@@ -241,4 +271,86 @@ void print_v2d_to_stdout(int i,v2d v2dvector)
    printf("%s,",buf);
    fix16_to_str(v2dvector.y,buf,2);
    printf("%s\n",buf);
+}
+
+void cache_points_build(v3d* point,int iPointIndex)
+{
+    v3d rotatedX,rotatedY,rotatedZ;
+    if (iPointIndex<0||iPointIndex>7) return ;
+
+    mf16 projection = 
+    {
+        2,  // Rows
+        3,  // Columns
+        0,  // Errors
+
+        // Matrix actual data
+        {
+            {g_tOne, 0, 0 }, // Row 1
+            { 0, g_tOne, 0 } // Row 2
+        }
+    };
+
+
+    for (int iRotationAngle = 0 ; iRotationAngle < 360 ; iRotationAngle++)
+    {
+        // X rotation matrix - rotation along the X axis - Z and Y changes, not X
+        mf16 rotationX = 
+        {
+            3,  // Rows
+            3,  // Columns
+            0,  // Errors
+
+            // Matrix actual data
+            {
+                {g_tOne,       0,                 0,                                          },  // Row 1
+                { 0,       fix16_coslist[iRotationAngle],       fix16_sinlist_inv[iRotationAngle]   },  // Row 2
+                { 0,       fix16_sinlist[iRotationAngle],       fix16_coslist[iRotationAngle]                                 }   // Row 3
+            }
+        };
+
+        // Y rotation matrix - rotation along the Y axis - Z and X changes, not Y
+        mf16 rotationY = 
+        {
+            3,  // Rows
+            3,  // Columns
+            0,  // Errors
+
+            // Matrix actual data
+            {
+                { fix16_coslist[iRotationAngle], 0, fix16_sinlist_inv[iRotationAngle],                }, // Row 1
+                { 0,           g_tOne, 0                                                         }, // Row 2
+                { fix16_sinlist[iRotationAngle], 0, fix16_coslist[iRotationAngle]                                               }  // Row 3
+            }
+        };
+
+        // Z rotation matrix - rotation along the Z axis - X and Y changes, not Z
+        mf16 rotationZ = 
+        {
+            3,  // Rows
+            3,  // Columns
+            0,  // Errors
+
+            // Matrix actual data
+            {
+                { fix16_coslist[iRotationAngle], fix16_sinlist_inv[iRotationAngle],  0 }, // Row 1
+                { fix16_sinlist[iRotationAngle], fix16_coslist[iRotationAngle],                                0 }, // Row 2
+                { 0,           0,                                           g_tOne }  // Row 3
+            }
+        };
+
+        if (mf16_mul_v3d_to_v3d(&rotatedX, &rotationX, point)) return ;
+        if (mf16_mul_v3d_to_v3d(&rotatedY, &rotationY, &rotatedX)) return ;
+        if (mf16_mul_v3d_to_v3d(&rotatedZ, &rotationZ, &rotatedY)) return ;
+
+        projected2dvectors[iPointIndex][iRotationAngle].x = fix16_mul(rotatedZ.x,projection.data[0][0]);
+        projected2dvectors[iPointIndex][iRotationAngle].y = fix16_mul(rotatedZ.y,projection.data[1][1]);
+
+        /*if (iRotationAngle==0 && iPointIndex==0)
+        {
+            char buf[100];
+            fix16_to_str(projected2dvectors[0][0].x,buf,2);
+            logWrite("valore punto zero a gradi zero '%s'\n",buf);
+        }*/
+    }
 }

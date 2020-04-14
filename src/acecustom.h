@@ -62,6 +62,7 @@ void copChangeMove(tCopList *, tCopBlock *, UWORD, volatile void *, UWORD);
 void memBitmapToSprite(UBYTE*, const size_t);
 void spriteMove3(FUBYTE,UWORD,UWORD);
 void SetTrailingSprite(const FUBYTE, const FUBYTE);
+void custLine(tSimpleBufferManager* ,UWORD  ,UWORD ,UWORD ,UWORD );
 
 inline void SpriteCollisionEnable(const UWORD flags)
 {

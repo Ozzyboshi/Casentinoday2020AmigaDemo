@@ -275,6 +275,10 @@ void gameGsCreate(void) {
   fix16_sinlist_init();
   fix16_coslist_init();
 
+  // Execute precalculations for stages
+  for (UBYTE ubStageCounter = 0 ; ubStageCounter < MAXSTAGES; ubStageCounter++)
+    if (s_pStagesFunctions[ubStageCounter].g_pInitStageFunction) s_pStagesFunctions[ubStageCounter].g_pInitStageFunction ();
+
   // Copperlist palette for images
   myBlock = copBlockCreate(s_pView->pCopList, 15, 0, 76);
   for (UBYTE ubCounter=1;ubCounter<16;ubCounter++)
@@ -565,6 +569,9 @@ void gameGsLoop(void) {
     
     //viewUpdateCLUT(s_pView);
     vPortWaitForEnd(s_pVpMain);
+    //if (g_ubStageIndex==1) {stage3dCube2();}
+    if (s_pStagesFunctions[g_ubStageIndex].g_pAfterWaitStageFunction)
+      s_pStagesFunctions[g_ubStageIndex].g_pAfterWaitStageFunction();
   }
 }
 

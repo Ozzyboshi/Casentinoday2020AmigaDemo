@@ -21,6 +21,8 @@ typedef struct _tStageManager {
   void (*g_pStageFunction) ();
   void (*g_pStageInputFunction) ();
   void (*g_pPostStageFunction) ();
+  void (*g_pInitStageFunction) ();
+  void (*g_pAfterWaitStageFunction) ();
 } tStageManager;
 
 tStageManager s_pStagesFunctions[]={
@@ -30,7 +32,9 @@ tStageManager s_pStagesFunctions[]={
   	.g_pPreStageFunction = stage1pre, 
   	.g_pStageFunction=stage1, 
   	.g_pStageInputFunction=stage1input,
-    .g_pPostStageFunction = NULL
+    .g_pPostStageFunction = NULL,
+    .g_pInitStageFunction = NULL,
+    .g_pAfterWaitStageFunction = NULL
   },
 
   // Stage 2 - 3dcube
@@ -38,7 +42,9 @@ tStageManager s_pStagesFunctions[]={
   	.g_pPreStageFunction = stage3dCubePre, 
   	.g_pStageFunction=stage3dCube, 
   	.g_pStageInputFunction=stage3dCubeInput,
-    .g_pPostStageFunction = stage3dCubePost
+    .g_pPostStageFunction = stage3dCubePost,
+    .g_pInitStageFunction = stage3dCubeInit,
+    .g_pAfterWaitStageFunction = stage3dCube2
   },
 
   // Stage 3 - friction
@@ -46,7 +52,9 @@ tStageManager s_pStagesFunctions[]={
   	.g_pPreStageFunction = stage2pre,
   	.g_pStageFunction=stage2,
   	.g_pStageInputFunction=stage2input,
-    .g_pPostStageFunction = NULL
+    .g_pPostStageFunction = NULL,
+    .g_pInitStageFunction = NULL,
+    .g_pAfterWaitStageFunction = NULL
   },
 
   // Stage 4 - attraction
@@ -54,6 +62,8 @@ tStageManager s_pStagesFunctions[]={
     .g_pPreStageFunction = stageAttractionPre,
     .g_pStageFunction=stageAttraction,
     .g_pStageInputFunction=stageAttractionInput,
-    .g_pPostStageFunction = NULL
+    .g_pPostStageFunction = NULL,
+    .g_pInitStageFunction = NULL,
+    .g_pAfterWaitStageFunction = NULL
   }
 };

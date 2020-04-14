@@ -41,9 +41,10 @@ void stageAttraction();
 void stageAttractionPre();
 
 // 3d Cube stage prototypes
+void stage3dCubeInit();
 void stage3dCubeInput();
 void stage3dCubePre();
 void stage3dCube();
 void stage3dCubePost();
-
+void stage3dCube2();
 #endif

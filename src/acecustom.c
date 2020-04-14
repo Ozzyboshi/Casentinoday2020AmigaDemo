@@ -28,7 +28,7 @@ UBYTE moveCameraByFraction(tCameraManager *pManager, WORD wDx, WORD wDy, const U
 
 UBYTE printCursorPixel(tSimpleBufferManager* pMainBuffer,UWORD uwXCoordinate,UWORD uwYCoordinate,const UWORD uwOffset)
 {
-  if (uwYCoordinate>224) return 0;
+  if (uwYCoordinate>=224) return 0;
   UBYTE ris=0;
   UBYTE* primo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[0]);
   UBYTE* secondo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[1]);
@@ -89,7 +89,7 @@ UBYTE restorePixels(tSimpleBufferManager* pMainBuffer,struct MemPoint elem,const
   UBYTE* terzo = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[2]);
   UBYTE* quarto = (UBYTE*)((ULONG)pMainBuffer->pBack->Planes[3]);
 
-  if (uwYCoordinate>224) return 0;
+  if (uwYCoordinate>=224) return 0;
 
 
   //UWORD offset = 40*NUM_IMAGES;
@@ -271,4 +271,46 @@ UBYTE printCursorPixel5(tSimpleBufferManager* pMainBuffer,UWORD uwXCoordinate,UW
   return ris;
 }
 
+void custLine(tSimpleBufferManager* pMainBuffer,UWORD uwX1 ,UWORD uwY1,UWORD uwX2,UWORD uwY2)
+{
+  static UWORD uwOffset=40*8;
+  UWORD uwStart,uwEnd,uwYLength;
 
+  
+
+  if (uwX1<uwX2)
+  {
+    uwStart = uwX1+1;
+    uwEnd = uwX2-1;
+  }
+  else
+  {
+    uwStart=uwX2+1;
+    uwEnd=uwX1-1;
+  }
+
+  if (uwY2>uwY1) uwYLength = uwY2-uwY1;
+  else uwYLength = uwY1-uwY2;
+
+  if (uwYLength==0) uwYLength=uwY1;
+
+  UWORD uwXLength = uwEnd-uwStart;
+
+  for (UWORD iCounter = uwStart; iCounter <= uwEnd; iCounter++)
+  {
+    UBYTE* quinto = quinto=(UBYTE*)((ULONG)pMainBuffer->pBack->Planes[4]);
+    UWORD uwYCoordinate=(UWORD)uwXLength*iCounter/uwYLength;
+    
+    quinto+=uwOffset*uwYCoordinate;
+
+    UBYTE resto=(UBYTE)iCounter&7;
+    UWORD temp=iCounter>>3;
+
+    quinto+=temp;
+
+    temp=~resto;
+    resto=temp&7;
+
+    *quinto|=1UL<<resto;
+  }
+}

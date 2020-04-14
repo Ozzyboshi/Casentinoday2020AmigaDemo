@@ -46,7 +46,7 @@ fi
 AC_CONFIG_FILES([Makefile src/Makefile _res/Makefile floppy/Makefile tests/Makefile])
 # asm=vasmm68k_mot
 
-# AC_DEFINE([ACE_DEBUG], [ON], [Debug on])
+#AC_DEFINE([ACE_DEBUG], [ON], [Debug on])
 
 AC_OUTPUT
 

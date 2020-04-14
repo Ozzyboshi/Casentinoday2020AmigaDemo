@@ -38,7 +38,8 @@
  /opt/amiga/m68k-amigaos/sys-include/_ansi.h \
  /opt/amiga/m68k-amigaos/sys-include/stdint.h \
  /opt/amiga/m68k-amigaos/sys-include/xlocale.h \
- /opt/amiga/include/fixmath/fix16.h ../src/vectors.h
+ /opt/amiga/include/fixmath/fix16.h ../src/vectors.h \
+ ../src/customtrigonometry.h ../src/matrix.h
 
 /opt/amiga/m68k-amigaos/libnix/include/stdio.h:
 
@@ -125,3 +126,7 @@
 /opt/amiga/include/fixmath/fix16.h:
 
 ../src/vectors.h:
+
+../src/customtrigonometry.h:
+
+../src/matrix.h:
