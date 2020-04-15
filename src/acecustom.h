@@ -39,8 +39,8 @@ typedef struct _tAceSprite {
   UBYTE* pSpriteData;
   ULONG ulSpriteSize;
   BYTE bTrailingSpriteIndex;
-  UWORD uwSpriteHeight;
-  UWORD uwSpriteCenter;
+  UWORD uwSpriteHeight;       // Height of the sprite in pixel (ulSpriteSize/4)
+  UWORD uwSpriteCenter;       // value 8 for single sprite (since a sprite is 16 bits wide) or 16 for side by side sprite
 
   int iBounceBottomLimit;
   int iBounceRightLimit;
@@ -54,6 +54,7 @@ tCameraManager *s_pCameraMain;
 tVPort *s_pVpScore;
 tSimpleBufferManager *s_pMainBuffer;
 
+tCopBlock *copBlockEnableSpriteFull(tCopList *, FUBYTE , UBYTE* , ULONG );
 UBYTE moveCameraByFraction(tCameraManager *, WORD, WORD, UBYTE, const UBYTE);
 UBYTE printCursorPixel(tSimpleBufferManager*,UWORD,UWORD,const UWORD);
 UBYTE printCursorPixel5(tSimpleBufferManager*,UWORD,UWORD,const UWORD);

@@ -79,8 +79,10 @@ void mt_end();
 void moverBounce(tMover*);
 
 void copyToMainBpl(const unsigned char*,const UBYTE, const UBYTE);
-tCopBlock *copBlockEnableSpriteFull(tCopList *, FUBYTE , UBYTE* , ULONG );
 
+#if 0
+tCopBlock *copBlockEnableSpriteFull(tCopList *, FUBYTE , UBYTE* , ULONG );
+#endif
 void nextStage();
 
 long mt_init(const unsigned char*);
@@ -174,8 +176,6 @@ void gameGsCreate(void) {
     TAG_SIMPLEBUFFER_BOUND_WIDTH,TOTAL_WIDTH,
 //    TAG_SIMPLEBUFFER_COPLIST_OFFSET, 20,
   TAG_END);
-
- 
 
   // Since we've set up global CLUT, palette will be loaded from first viewport
   // Colors are 0x0RGB, each channel accepts values from 0 to 15 (0 to F).
@@ -317,21 +317,6 @@ void gameGsCreate(void) {
 //#ifdef SOUND  
   mt_init(g_tPapercutMod_data);
 //#endif
-
-  /*spriteVectorInit(&g_Sprite6Vector,6,215,115,0,0,LITTLE_BALLS_MASS);
-  copBlockEnableSpriteFull(s_pView->pCopList, 6, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
-  memcpy(s_pAceSprites[6].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
-  spriteMove3(6,150,150);
-
-  spriteVectorInit(&g_Sprite7Vector,7,215,115,0,0,LITTLE_BALLS_MASS);
-  copBlockEnableSpriteFull(s_pView->pCopList, 7, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
-  memcpy(s_pAceSprites[7].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
-  spriteMove3(7,0,0);
-
-  spriteVectorInit(&g_Sprite0Vector,0,45,115,0,0,LITTLE_BALLS_MASS);
-  copBlockEnableSpriteFull(s_pView->pCopList, 0, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
-  memcpy(s_pAceSprites[0].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
-  spriteMove3(0,100,100);*/
 
   spriteVectorInit(&g_Sprite1Vector,1,125,115,0,0,LITTLE_BALLS_MASS);
   copBlockEnableSpriteFull(s_pView->pCopList, 1, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
@@ -606,199 +591,6 @@ void copyToMainBpl(const unsigned char* pData,const UBYTE ubSlot,const UBYTE ubM
     if (ubMaxBitplanes>0 && ubBitplaneCounter+1>=ubMaxBitplanes) return ;
   }
   return ;
-}
-
-tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYTE* pSpriteData,ULONG ulSpriteSize) {
-  static tCopBlock *pBlockSprites=NULL;
-  tCopMoveCmd * pMoveCmd=NULL;
-  
-  if (pBlockSprites == NULL) {
-    pBlockSprites = copBlockDisableSprites(pList, 0xFF);
-    systemSetDma(DMAB_SPRITE, 1);
-
-    // Reset tAceSprite array
-    //logWrite("copBlockEnableSprite - resetting all sprites\n");
-    for (UBYTE ubIterator=0;ubIterator<ACE_MAXSPRITES;ubIterator++)
-    {
-      //memset(&s_pAceSprites[ubIterator],0,sizeof(tAceSprite));
-      s_pAceSprites[ubIterator].pSpriteData = NULL;
-      s_pAceSprites[ubIterator].ulSpriteSize = 0;
-      s_pAceSprites[ubIterator].bTrailingSpriteIndex = -1;
-      s_pAceSprites[ubIterator].uwSpriteHeight = 0;
-      s_pAceSprites[ubIterator].uwSpriteCenter = 0;
-      s_pAceSprites[ubIterator].iBounceBottomLimit = 0;
-      s_pAceSprites[ubIterator].iBounceRightLimit = 0;
-    }
-  }
-
-  if (s_pAceSprites[fubSpriteIndex].pSpriteData)
-  {
-    FreeMem(s_pAceSprites[fubSpriteIndex].pSpriteData,s_pAceSprites[fubSpriteIndex].ulSpriteSize);
-    s_pAceSprites[fubSpriteIndex].pSpriteData = NULL;
-    s_pAceSprites[fubSpriteIndex].ulSpriteSize = 0;  
-    s_pAceSprites[fubSpriteIndex].bTrailingSpriteIndex = -1;
-    s_pAceSprites[fubSpriteIndex].uwSpriteHeight = 0;
-    s_pAceSprites[fubSpriteIndex].uwSpriteCenter = 0;
-    s_pAceSprites[fubSpriteIndex].iBounceBottomLimit = 0;
-    s_pAceSprites[fubSpriteIndex].iBounceRightLimit = 0;
-  }
-
-  // Bounce limits
-  s_pAceSprites[fubSpriteIndex].iBounceBottomLimit = 255-ulSpriteSize/4;
-  s_pAceSprites[fubSpriteIndex].iBounceRightLimit = 319-16;
-
-  s_pAceSprites[fubSpriteIndex].uwSpriteHeight = ulSpriteSize/4;
-  s_pAceSprites[fubSpriteIndex].uwSpriteCenter = 8;
-
-  //Make some room for sprite extra information
-  ulSpriteSize+=8;
-   
-  //logWrite("copBlockEnableSprite - Allocate : %d bytes for sprite %d\n",ulSpriteSize,fubSpriteIndex);
-  s_pAceSprites[fubSpriteIndex].pSpriteData = (UBYTE*)AllocMem(ulSpriteSize,MEMF_CHIP);
-  memset (s_pAceSprites[fubSpriteIndex].pSpriteData,0,ulSpriteSize);
-  //logWrite("copBlockEnableSprite - Allocated mem : %x\n",s_pAceSprites[fubSpriteIndex].pSpriteData);
-  
-  const UBYTE ubVStart=0x30;
-  const UBYTE ubHStart=0x90;
-  s_pAceSprites[fubSpriteIndex].pSpriteData[0] = ubVStart; // ubVStart
-  s_pAceSprites[fubSpriteIndex].pSpriteData[1] = ubHStart; // ubHstart
-  s_pAceSprites[fubSpriteIndex].pSpriteData[2] = (UBYTE)((ulSpriteSize-8)/4)+ubVStart;
-  s_pAceSprites[fubSpriteIndex].pSpriteData[3] = 0x00;
-
-  s_pAceSprites[fubSpriteIndex].ulSpriteSize = ulSpriteSize-8;
-
-
-  // For each line of the sprite
-  UWORD ubImgOffset=0;
-  UWORD ubHalfOffset=(UWORD)((ulSpriteSize-8)/2);
-  /*if (fubSpriteIndex>0)
-  {*/
-  for (UWORD ubImgCount=0;0 && ubImgCount< (UWORD)((ulSpriteSize-8)/4);ubImgCount++)
-  {
-    // First two bytes from first bitplane
-    memcpy(s_pAceSprites[fubSpriteIndex].pSpriteData+4+ubImgOffset,pSpriteData+ubImgCount*2,2);
-    ubImgOffset+=2;
-
-    // Other two bytes from second bitplane
-    memcpy(s_pAceSprites[fubSpriteIndex].pSpriteData+4+ubImgOffset,pSpriteData+ubHalfOffset+ubImgCount*2,2);
-    ubImgOffset+=2;
-  }
-  /*}*/
-
-  //memcpy(s_pAceSprites[fubSpriteIndex].pSpriteData+4,pSpriteData,ulSpriteSize);
-
-  // Terminator
-  s_pAceSprites[fubSpriteIndex].pSpriteData[ulSpriteSize-1] = 0x00;
-  s_pAceSprites[fubSpriteIndex].pSpriteData[ulSpriteSize-2] = 0x00;
-  s_pAceSprites[fubSpriteIndex].pSpriteData[ulSpriteSize-3] = 0x00;
-  s_pAceSprites[fubSpriteIndex].pSpriteData[ulSpriteSize-4] = 0x00;
-
-  //ULONG ulAddr = (ULONG)pSpriteData;
-  ULONG ulAddr = (ULONG)s_pAceSprites[fubSpriteIndex].pSpriteData;
-
-  /*copMove(pList, pBlockSprites, &g_pSprFetch[fubSpriteIndex].uwHi, ulAddr >> 16);
-  copMove(pList, pBlockSprites, &g_pSprFetch[fubSpriteIndex].uwLo , ulAddr & 0xFFFF);*/
-  if (fubSpriteIndex==0)
-  {
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[0];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[1];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-    logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-  }
-
-  // Start of sprite 1
-  if (fubSpriteIndex==1)
-  {
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[2];
-    //logWrite("setting Sprite 1 address to %x\n",s_pAceSprites[fubSpriteIndex].pSpriteData);
-    //logWrite("value: %x\n",*s_pAceSprites[fubSpriteIndex].pSpriteData+0);
-    //logWrite("value: %x\n",*s_pAceSprites[fubSpriteIndex].pSpriteData+1);
-    pMoveCmd->bfValue=ulAddr >> 16;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[3];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-    //return NULL;
-  // end of sprite 1
-  }
-   
-  if (fubSpriteIndex==2)
-  {
-    // Start of sprite 2
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[4];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[5];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-  }
-
-  if (fubSpriteIndex==3)
-  {
-    // Start of sprite 3
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[6];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[7];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-  }
-
-  if (fubSpriteIndex==4)
-  {
-    // Start of sprite 4
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[8];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[9];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-  }
-
-  if (fubSpriteIndex==5)
-  {
-    // Start of sprite 5
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[10];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[11];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-    //logWrite("move command : %hx\n",pMoveCmd->bfDestAddr);
-  }
-
-  // Start of sprite 6
-  if (fubSpriteIndex==6)
-  {
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[12];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[13];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-  }
-
-  // Start of sprite 7
-  if (fubSpriteIndex==7)
-  {
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[14];
-    pMoveCmd->bfValue=ulAddr >> 16;
-    pMoveCmd = (tCopMoveCmd*)&pBlockSprites->pCmds[15];
-    pMoveCmd->bfValue=ulAddr & 0xFFFF;
-  }
-
-  //SETSPRITEIMG(fubSpriteIndex,pSpriteData,ulSpriteSize)
-
-  return NULL;
 }
 
 // Switch to next stage
