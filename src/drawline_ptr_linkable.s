@@ -30,8 +30,8 @@ WBlit_Init:
         moveq.l #-1,d5
         move.l  d5,$dff044              ; BLTAFWM/BLTALWM = $FFFF
         move.w  #$8000,$dff074          ; BLTADAT = $8000
-        move.w  #320,$dff060             ; BLTCMOD = 320
-        move.w  #320,$dff066             ; BLTDMOD = 320
+        move.w  #40,$dff060             ; BLTCMOD = 40
+        move.w  #40,$dff066             ; BLTDMOD = 40
         rts
 
 

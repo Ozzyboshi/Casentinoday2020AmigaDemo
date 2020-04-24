@@ -15,7 +15,7 @@ Boston, MA 02111-1307, USA.
 */
 
 #include "casentino.h"
-
+#include "radiallineshiddenpart.h"
 //#include <ace/managers/key.h> // Keyboard processing
 #include <ace/managers/game.h> // For using gameClose
 #include <ace/managers/system.h> // For systemUnuse and systemUse
@@ -53,8 +53,10 @@ Boston, MA 02111-1307, USA.
 #include "../_res/paper_cut.h"  // Thx to morph of dual crew
 
 // Fonts
-#include "../_res/uni54.h"
+//#include "../_res/uni54.h"
+//#include "shardeddata.h"
 // ASSETS END
+ const unsigned char* uni54_data_shared;
 
 #include "vectors.h"
 #include "acecustom.h"
@@ -71,18 +73,17 @@ Boston, MA 02111-1307, USA.
 #define PRINTF(var,var2,var3) fontDrawStr(s_pMainBuffer->pBack, s_pFontUI, var*320+10,var2,var3, FONT_MAIN_COLOR, FONT_LAZY);
 #define SETSPRITEIMG(var,var2,var3) memcpy(s_pAceSprites[var].pSpriteData+4,var2,var3);
 
+#define STAR_SPRITE_INDEX 6
+
 #ifdef SOUND
 void mt_music();
 void mt_end();
 #endif
 
+void copSetMoveRaw(tCopMoveCmd *, UWORD, UWORD);
+
 void moverBounce(tMover*);
-
 void copyToMainBpl(const unsigned char*,const UBYTE, const UBYTE);
-
-#if 0
-tCopBlock *copBlockEnableSpriteFull(tCopList *, FUBYTE , UBYTE* , ULONG );
-#endif
 void nextStage();
 
 long mt_init(const unsigned char*);
@@ -115,6 +116,11 @@ static UWORD g_uwBlitModd = RESET_SCROLL/8;
 static tFont *s_pFontUI;
 static tTextBitMap *s_pGlyph;
 static tCameraManager *s_pCamera;
+
+#if 0
+static tCopBlock* sprite8BlockStart,*sprite8BlockEnd;
+#endif
+
 tCameraManager *s_pCameraMain;
 
 // All variables outside fns are global - can be accessed in any fn
@@ -208,11 +214,11 @@ void gameGsCreate(void) {
   s_pVpScore->pPalette[19] = uwColTmp;
   s_pVpScore->pPalette[23] = uwColTmp;
   s_pVpScore->pPalette[27] = uwColTmp;
-  s_pVpScore->pPalette[31] = uwColTmp;
+  s_pVpScore->pPalette[31] = STARFIELDCOLOR;
 #endif
 
 
-  s_pFontUI = fontCreateFromMem((UBYTE*)uni54_data);
+  s_pFontUI = fontCreateFromMem((UBYTE*)uni54_data_shared);
   if (s_pFontUI==NULL) return;
 
   s_pGlyph = fontCreateTextBitMap(250, s_pFontUI->uwHeight);
@@ -343,6 +349,44 @@ void gameGsCreate(void) {
   memcpy(s_pAceSprites[4].pSpriteData+4,ball2bpl32x32_frame1_1_data,sizeof(ball2bpl32x32_frame1_1_data));
   memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame1_2_data,sizeof(ball2bpl32x32_frame1_2_data));
 
+  // Sprite 7 access - STARFIELD
+  // Allocate the recycled sprite raw data memory for 111 stars (max 127 to fill the whole 256 vertical resolution)
+  const UBYTE ubNumStars = 111;
+  UBYTE ubStarDataArray[SPRITE_REQ_BYTES(ubNumStars)];
+
+  // Fill the array with star positions and data, each star will have a random x position and a unique y position starting from 32th row
+  initRandStars(ubStarDataArray, +32, ubNumStars);
+
+  // Load the sprite data into sprite register, DMA will take care of the rest, use sprite7 registers (as defined in STAR_SPRITE_INDEX)
+  copBlockEnableSpriteRecycled(s_pView->pCopList, STAR_SPRITE_INDEX, (UBYTE *)ubStarDataArray, sizeof(ubStarDataArray));
+
+  // Set last couple of sprite BEHIND bitplane, to do this set bplcon2 to 011
+  ACE_SET_PLAYFIELD_PRIORITY_3
+
+  //ACE_SET_SPRITE_COUPLE_4_COLORS(s_pVpMain, 0x000F, 0x000F, 0x000F)
+
+#if 0
+  // Sprite 8 access with no DMA
+  sprite8BlockStart = copBlockCreate(s_pView->pCopList,9,7,77);
+
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff178,0x0080);
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff17A,0x0000);
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff17e,0x0e70);
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff17c,0x03c0);
+
+  //copSetMoveRaw(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff5BC7,0x0080);
+  copSetMoveRaw((tCopMoveCmd*)&sprite8BlockStart->pCmds[sprite8BlockStart->uwCurrCount], 0x4A01, 0xFFFE);
+  sprite8BlockStart->uwCurrCount++;
+
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff178,0x0080);
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff17A,0x0000);
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff17e,0xFFFF);
+  copMove(s_pView->pCopList,sprite8BlockStart,(void*) 0xdff17c,0xFFFF);
+
+  sprite8BlockEnd = copBlockCreate(s_pView->pCopList,1,7,77+100+1);
+  copMove(s_pView->pCopList,sprite8BlockEnd,(void*) 0xdff17A,0x0000);
+#endif
+
   copProcessBlocks();
 
   // Init collision stuff
@@ -373,7 +417,13 @@ void gameGsLoop(void) {
     return ;
   }
   // only for debug convenience 
-  //if (keyUse(KEY_C)) nextStage();
+  if (keyUse(KEY_V)) 
+    {
+      gameChangeState(radialLinesGsCreate,radialLinesGsLoop,radialLinesGsDestroy);
+      return ;
+      }
+    if (keyUse(KEY_C)) 
+      nextStage();
 
   // Collision ON/OFF
   if (keyUse(KEY_Z))
@@ -391,11 +441,15 @@ void gameGsLoop(void) {
       PrintTextCollisionOn();
     }
   }
+
+  ACE_SET_PLAYFIELD_PRIORITY_3
+  moveStars(STAR_SPRITE_INDEX);
   
   s_pStagesFunctions[g_ubStageIndex].g_pStageInputFunction ();
 
   if (1)
   {
+    // Red
 #ifdef COLORDEBUG
   g_pCustom->color[0] = 0x0F00;
 #endif
@@ -445,6 +499,7 @@ void gameGsLoop(void) {
     if (bSpriteCounter>80) bSpriteCounter=0;
     else if (bSpriteCounter<0) bSpriteCounter=80;
 
+// Green
 #ifdef COLORDEBUG
   g_pCustom->color[0] = 0x00F0;
 #endif
@@ -527,13 +582,22 @@ void gameGsLoop(void) {
       g_endStageFlag = 1 ;
     }
 
+// CYAN
 #ifdef COLORDEBUG
-  g_pCustom->color[0] = 0x0F00;
+  g_pCustom->color[0] = 0x00FF;
 #endif
     s_pStagesFunctions[g_ubStageIndex].g_pStageFunction ();
+
+// BLUE
 #ifdef COLORDEBUG
   g_pCustom->color[0] = 0x000F;
 #endif
+
+   /* static UWORD uwSpriteYPos = 50;
+    copBlockWait(s_pView->pCopList,sprite8BlockStart,0,uwSpriteYPos);
+    copBlockWait(s_pView->pCopList,sprite8BlockEnd,0,uwSpriteYPos+100);
+    uwSpriteYPos++;
+    if (uwSpriteYPos>=200) uwSpriteYPos=50;*/
 
     process++;
 
@@ -541,6 +605,7 @@ void gameGsLoop(void) {
     {
       viewProcessManagers(s_pView);
 
+// YELLOW
 #ifdef COLORDEBUG
   g_pCustom->color[0] = 0x0FF0;
 #endif
@@ -548,6 +613,7 @@ void gameGsLoop(void) {
       copProcessBlocks();
     }
 
+// RESET TO BLACK
 #ifdef COLORDEBUG
     g_pCustom->color[0] = 0x0000;
 #endif
@@ -563,6 +629,9 @@ void gameGsLoop(void) {
 void gameGsDestroy(void) {
   // Cleanup when leaving this gamestate
   systemUse();
+
+  // Free sprite stuff
+  copBlockSpritesFree();
 
   // This will also destroy all associated viewports and viewport managers
   viewDestroy(s_pView);
@@ -607,4 +676,10 @@ void nextStage()
   // Execute prestage function
   s_pStagesFunctions[g_ubStageIndex].g_pPreStageFunction ();
   DeleteTextCollision();
+}
+void copSetMoveRaw(tCopMoveCmd *pMoveCmd, UWORD uwReg, UWORD uwValue)
+{
+  pMoveCmd->bfUnused = 0;
+	pMoveCmd->bfDestAddr = uwReg;
+	pMoveCmd->bfValue = uwValue;
 }

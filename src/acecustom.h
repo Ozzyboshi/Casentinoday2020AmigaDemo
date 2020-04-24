@@ -35,6 +35,37 @@ Boston, MA 02111-1307, USA.
 #define ACE_IS_SPRITE_COLLIDING_3_2 g_ACE_COLLISIONS_FLAGS&0x1000
 #define ACE_IS_SPRITE_COLLIDING_2_3 g_ACE_COLLISIONS_FLAGS&0x1000
 
+#define ACE_IS_SPRITE_COLLIDING_3_4 g_ACE_COLLISIONS_FLAGS&0x4000
+#define ACE_IS_SPRITE_COLLIDING_4_3 g_ACE_COLLISIONS_FLAGS&0x4000
+
+#define SPRITE_REQ_BYTES(var) 8 * var + 4
+#define ACE_SPRITE_MIN_VPOSITION 0x30
+#define ACE_SPRITE_MIN_HPOSITION 0x40
+#define ACE_SPRITE_MAX_HPOSITION 0xf0
+
+#define ACE_SET_SPRITE_COUPLE_1_COLORS(var, var1, var2, var3) \
+  var->pPalette[17] = var1;                                   \
+  var->pPalette[18] = var2;                                   \
+  var->pPalette[19] = var3;
+#define ACE_SET_SPRITE_COUPLE_2_COLORS(var, var1, var2, var3) \
+  var->pPalette[21] = var1;                                   \
+  var->pPalette[22] = var2;                                   \
+  var->pPalette[23] = var3;
+#define ACE_SET_SPRITE_COUPLE_3_COLORS(var, var1, var2, var3) \
+  var->pPalette[25] = var1;                                   \
+  var->pPalette[26] = var2;                                   \
+  var->pPalette[27] = var3;
+#define ACE_SET_SPRITE_COUPLE_4_COLORS(var, var1, var2, var3) \
+  var->pPalette[29] = var1;                                   \
+  var->pPalette[30] = var2;                                   \
+  var->pPalette[31] = var3;
+
+#define ACE_SET_PLAYFIELD_PRIORITY_0 g_pCustom->bplcon2=0x0000;
+#define ACE_SET_PLAYFIELD_PRIORITY_1 g_pCustom->bplcon2=0x0009;
+#define ACE_SET_PLAYFIELD_PRIORITY_2 g_pCustom->bplcon2=0x0012;
+#define ACE_SET_PLAYFIELD_PRIORITY_3 g_pCustom->bplcon2=0x001b;
+#define ACE_SET_PLAYFIELD_PRIORITY_4 g_pCustom->bplcon2=0x0024;
+
 typedef struct _tAceSprite {
   UBYTE* pSpriteData;
   ULONG ulSpriteSize;
@@ -80,5 +111,10 @@ inline void SpriteGetCollisions()
 {
 	g_ACE_COLLISIONS_FLAGS=g_pCustom->clxdat;
 }
+
+tCopBlock *copBlockEnableSpriteRecycled(tCopList *, FUBYTE, UBYTE *, ULONG);
+void copBlockSpritesFree();
+void initRandStars(UBYTE *, const UBYTE, const UBYTE);
+void moveStars(UBYTE);
 
 #endif

@@ -14,23 +14,13 @@ Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 Boston, MA 02111-1307, USA.
 */
 
-#ifndef _GLOBAL_H_
-#define _GLOBAL_H_
+#ifndef _radiallineshiddenpart_H_
+#define _radiallineshiddenpart_H_
 
-//#define COLORDEBUG
+void radialLinesGsCreate(void);
 
-//#define MAXSTAGES 2
-#define NUM_IMAGES 8
-#define BIG_BALL_START_POSITION_X 170
-#define BIG_BALL_MASS 8
-#define LITTLE_BALLS_MASS 2
+void radialLinesGsLoop(void);
 
-#define TRAIL
+void radialLinesGsDestroy(void);
 
-#ifdef TRAIL
-  #define TRAIL_LENGTH 200
-#endif
-
-#define STARFIELDCOLOR 0x00F
-
-#endif
+#endif // _

@@ -57,8 +57,7 @@ void blitLine2(
         tBitMap *pDst, WORD x1, WORD y1, WORD x2, WORD y2,
         UBYTE ubColor, UWORD uwPattern
 );
-void DrawlineOr(UBYTE*,int,int,int,int);
-void InitLine();
+
 //void blitClear(tSimpleBufferManager * buffer,UBYTE nBitplane);
 void testcanc();
 tVPort *s_pVpMain;
@@ -676,10 +675,10 @@ void changeSpritePalette()
     g_pCustom->color[27] = CUBE_COLOR;
     g_pCustom->color[28] = CUBE_COLOR;
 
-        // Sprite 4 colors (cursor)
+    // Sprite 4 colors (cursor)
     g_pCustom->color[29] = CUBE_COLOR;
     g_pCustom->color[30] = CUBE_COLOR;
-    g_pCustom->color[31] = CUBE_COLOR;
+    g_pCustom->color[31] = STARFIELDCOLOR;
 }
 
 void saveSpritePalette()

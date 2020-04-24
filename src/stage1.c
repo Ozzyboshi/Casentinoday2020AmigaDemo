@@ -21,6 +21,7 @@ Boston, MA 02111-1307, USA.
 //#define STAGE1_COLORDEBUG
 
 #define SPRITES_TO_COLLIDE ACE_SPRITE5_COLLISION_FLAG|ACE_SPRITE1_COLLISION_FLAG|ACE_SPRITE3_COLLISION_FLAG
+//|ACE_SPRITE7_COLLISION_FLAG
 
 fix16_t g_WindStep;
 BYTE bSpriteDirection ;
@@ -74,6 +75,8 @@ void stage1()
     SpriteCollisionEnable(SPRITES_TO_COLLIDE);
     SpriteGetCollisions();
 
+    //if ( ACE_IS_SPRITE_COLLIDING_4_3 ) gameClose();
+
     //if (0)
     if ( ACE_IS_SPRITE_COLLIDING_3_2 )
     {
@@ -120,9 +123,10 @@ void stage1()
     {
       ubSprite2Colliding=0;
       ubSprite3Colliding=0;
+#ifdef STAGE1_COLORDEBUG
       g_pCustom->color[0] = 0x0000;
+#endif
     }
-    //#endif
 
     if (ACE_IS_SPRITE_COLLIDING_3_1 )
     {
@@ -183,7 +187,7 @@ void stage1()
     moverAddAccellerationToVelocity(&g_Sprite4Vector);
     moverAddVelocityToLocation(&g_Sprite4Vector);
   }
-#ifdef COLORDEBUG
+#ifdef STAGE1_COLORDEBUG
   g_pCustom->color[0] = 0x0F0F;
 #endif
 

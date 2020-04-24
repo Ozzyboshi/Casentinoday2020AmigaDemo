@@ -1,4 +1,7 @@
+#include <time.h>
 #include "acecustom.h"
+
+tCopBlock *pBlockSprites=NULL;
 
 UBYTE moveCameraByFraction(tCameraManager *pManager, WORD wDx, WORD wDy, const UBYTE ubSkip,const UBYTE ubCameraCounterIndex)
 {
@@ -239,7 +242,7 @@ void SetTrailingSprite(const FUBYTE bTrailingSpriteIndex,const FUBYTE fubSpriteI
 }
 
 tCopBlock *copBlockEnableSpriteFull(tCopList *pList, FUBYTE fubSpriteIndex, UBYTE* pSpriteData,ULONG ulSpriteSize) {
-  static tCopBlock *pBlockSprites=NULL;
+  //static tCopBlock *pBlockSprites=NULL;
   tCopMoveCmd * pMoveCmd=NULL;
   
   if (pBlockSprites == NULL) {
@@ -475,4 +478,166 @@ void custLine(tSimpleBufferManager* pMainBuffer,UWORD uwX1 ,UWORD uwY1,UWORD uwX
 
     *quinto|=1UL<<resto;
   }
+}
+
+void copBlockSpritesFree()
+{
+  // Reset tAceSprite array
+  for (UBYTE ubIterator = 0; ubIterator < ACE_MAXSPRITES; ubIterator++)
+  {
+    if (s_pAceSprites[ubIterator].pSpriteData)
+      FreeMem(s_pAceSprites[ubIterator].pSpriteData, s_pAceSprites[ubIterator].ulSpriteSize);
+  }
+}
+
+tCopBlock *copBlockEnableSpriteRecycled(tCopList *pList, FUBYTE fubSpriteIndex, UBYTE *pSpriteData, ULONG ulSpriteSize)
+{
+  //static tCopBlock *pBlockSprites = NULL;
+  tCopMoveCmd *pMoveCmd = NULL;
+
+  if (pBlockSprites == NULL)
+  {
+    pBlockSprites = copBlockDisableSprites(pList, 0xFF);
+    systemSetDma(DMAB_SPRITE, 1);
+
+    // Reset tAceSprite array
+    for (UBYTE ubIterator = 0; ubIterator < ACE_MAXSPRITES; ubIterator++)
+    {
+      s_pAceSprites[ubIterator].pSpriteData = NULL;
+      s_pAceSprites[ubIterator].ulSpriteSize = 0;
+      s_pAceSprites[ubIterator].bTrailingSpriteIndex = -1;
+      s_pAceSprites[ubIterator].uwSpriteHeight = 0;
+      s_pAceSprites[ubIterator].uwSpriteCenter = 0;
+      s_pAceSprites[ubIterator].iBounceBottomLimit = 0;
+      s_pAceSprites[ubIterator].iBounceRightLimit = 0;
+    }
+  }
+  if (s_pAceSprites[fubSpriteIndex].pSpriteData)
+  {
+    FreeMem(s_pAceSprites[fubSpriteIndex].pSpriteData, s_pAceSprites[fubSpriteIndex].ulSpriteSize);
+    s_pAceSprites[fubSpriteIndex].pSpriteData = NULL;
+    s_pAceSprites[fubSpriteIndex].ulSpriteSize = 0;
+    s_pAceSprites[fubSpriteIndex].bTrailingSpriteIndex = -1;
+    s_pAceSprites[fubSpriteIndex].uwSpriteHeight = 0;
+    s_pAceSprites[fubSpriteIndex].uwSpriteCenter = 0;
+    s_pAceSprites[fubSpriteIndex].iBounceBottomLimit = 0;
+    s_pAceSprites[fubSpriteIndex].iBounceRightLimit = 0;
+  }
+
+  // Bounce limits
+  s_pAceSprites[fubSpriteIndex].iBounceBottomLimit = 255 - ulSpriteSize / 4;
+  s_pAceSprites[fubSpriteIndex].iBounceRightLimit = 319 - 16;
+
+  s_pAceSprites[fubSpriteIndex].uwSpriteHeight = (ulSpriteSize - 4) / 8;
+  s_pAceSprites[fubSpriteIndex].uwSpriteCenter = 8;
+
+  s_pAceSprites[fubSpriteIndex].ulSpriteSize = ulSpriteSize;
+  s_pAceSprites[fubSpriteIndex].pSpriteData = (UBYTE *)AllocMem(ulSpriteSize, MEMF_CHIP);
+  memcpy(s_pAceSprites[fubSpriteIndex].pSpriteData, (void *)pSpriteData, ulSpriteSize);
+
+  ULONG ulAddr = (ULONG)s_pAceSprites[fubSpriteIndex].pSpriteData;
+  if (fubSpriteIndex < ACE_MAXSPRITES)
+  {
+    pMoveCmd = (tCopMoveCmd *)&pBlockSprites->pCmds[fubSpriteIndex * 2];
+    pMoveCmd->bfValue = ulAddr >> 16;
+
+    pMoveCmd = (tCopMoveCmd *)&pBlockSprites->pCmds[1 + fubSpriteIndex * 2];
+    pMoveCmd->bfValue = ulAddr & 0xFFFF;
+  }
+  return pBlockSprites;
+}
+
+// Function to move all stars to the right
+void moveStars(UBYTE ubSpriteIndex)
+{
+  // Move each star by 2 pixels to the right and reset at 0xFF
+  UBYTE *pStarPointer = (UBYTE *)s_pAceSprites[ubSpriteIndex].pSpriteData + 1;
+
+  UBYTE ubStarType = 0;
+  for (UBYTE iStarCounter = 0; iStarCounter < s_pAceSprites[ubSpriteIndex].uwSpriteHeight; iStarCounter++, pStarPointer += 8, ubStarType++)
+  {
+    UBYTE *pCtrlBit = pStarPointer + 2;
+    if (ubStarType > 2)
+      ubStarType = 0;
+
+    // move if the star horizontal position is 0xF0, reset the position to the beginning of the line
+    if ((*pStarPointer) >= ACE_SPRITE_MAX_HPOSITION)
+    {
+      (*pStarPointer) = ACE_SPRITE_MIN_HPOSITION;
+      (*pCtrlBit) &= ~1UL;
+      continue;
+    }
+
+    // If star index is more than zero move index per second (and always even positions)
+    if (ubStarType)
+    {
+      (*pStarPointer) += ubStarType;
+      continue;
+    }
+
+    // check if bit zero of fouth byte is 1, if yes reset it and add 1 to hpos
+    if (*(pCtrlBit)&1U)
+    {
+      (*(pCtrlBit)) &= ~1UL;
+      (*pStarPointer)++;
+    }
+    // else just set it to move sprite only 1px to the right
+    else
+      (*pCtrlBit) |= 1UL;
+  }
+}
+
+// Init stars sprite data with random values on the horizontal position starting from ubStarFirstVerticalPosition
+void initRandStars(UBYTE *pStarData2, const UBYTE ubStarFirstVerticalPosition, const UBYTE ubStarsCount)
+{
+  const UBYTE ubSingleSpriteHeight = 1;
+  const UBYTE ubSingleSpriteGap = 1;
+  // Generate random X position from 64 to 216 (where the sprite is ON SCREEN)
+  time_t t;
+  srand((unsigned)time(&t));
+
+  UWORD uwStarFirstVerticalPositionCounter = (UWORD)ubStarFirstVerticalPosition + ACE_SPRITE_MIN_VPOSITION;
+
+  for (UBYTE ubStarCounter = 0; ubStarCounter < ubStarsCount; ubStarCounter++, pStarData2 += 8)
+  {
+    *pStarData2 = (UBYTE)(uwStarFirstVerticalPositionCounter & 0x00FF); // VSTART
+
+    // Calculate HSTART
+    UWORD uwRandomXPosition = (rand() % 153) + 64;
+    *(pStarData2 + 1) = (UBYTE)uwRandomXPosition; // HSTART
+
+    // Calculate VStop
+    UWORD uwVStop = uwStarFirstVerticalPositionCounter + ubSingleSpriteHeight;
+    *(pStarData2 + 2) = (UBYTE)(uwVStop & 0x00FF); // VStop
+
+    UBYTE *pControl = pStarData2 + 3;
+
+    // Set HStop least significant bit
+    *(pStarData2 + 3) = (UBYTE)uwRandomXPosition & 1UL;
+
+    // Set VStart msb
+    if (uwStarFirstVerticalPositionCounter > 255)
+      *pControl |= 0x04;
+    else
+      *pControl &= 0xFB;
+
+    // Set VStop msb
+    if (uwVStop > 255)
+      *pControl |= 0x02;
+    else
+      *pControl &= 0xFD;
+
+    *(pStarData2 + 4) = 0x10;
+    *(pStarData2 + 5) = 0x00;
+    *(pStarData2 + 6) = 0x10;
+    *(pStarData2 + 7) = 0x00;
+
+    uwStarFirstVerticalPositionCounter += (ubSingleSpriteHeight + ubSingleSpriteGap);
+  }
+
+  *(pStarData2 + 0) = 0x00;
+  *(pStarData2 + 1) = 0x00;
+  *(pStarData2 + 2) = 0x00;
+  *(pStarData2 + 3) = 0x00;
+  return;
 }

@@ -30,7 +30,8 @@ ball2bpl32x32_frame2_1.h ball2bpl32x32_frame2_2.h \
 ball2bpl32x32_frame3_1.h ball2bpl32x32_frame3_2.h \
 ball2bpl32x32_frame4_1.h ball2bpl32x32_frame4_2.h \
 Aded320x224_1.h Aded320x224_2.h Aded320x224palette.h \
-valkyrie320x244.h valkyrie320x244palette.h
+valkyrie320x244.h valkyrie320x244palette.h \
+radiallinespositions.h
 
 uni54: uni54.h
 	@echo "Fonts header file generated"
@@ -173,3 +174,7 @@ valkyrie320x244palette.h: valkyrie320x244palette.plt
 valkyrie320x244.raw valkyrie320x244palette.plt: valkyrie320x244.iff
 	rm -f valkyrie320x244.raw valkyrie320x244palette.plt
 	ilbm2raw valkyrie320x244.iff valkyrie320x244.raw -p valkyrie320x244palette.plt
+
+radiallinespositions.h: radiallinesallpositions.bin
+	$(CC) $? $@ radiallinespositions
+	
