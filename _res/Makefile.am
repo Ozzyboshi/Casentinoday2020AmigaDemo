@@ -3,17 +3,39 @@ CLEANFILES = uni54.h \
 VampireItalialogo.raw VampireItalialogo.plt \
 intermezzoV2.raw \
 intermezzoV2.plt \
-ball2bpl16x16_frame1.\
-raw ball2bpl16x16_frame2.raw \
+ball2bpl16x16_frame1.raw\
+ball2bpl16x16_frame2.raw \
 ball2bpl16x16_frame3.raw \
 ball2bpl16x16_frame4.raw \
-ball2bpl16x16_frame5.raw \
 ball2bpl32x32_frame1.raw ball2bpl32x32_frame1_1.raw ball2bpl32x32_frame1_2.raw \
 ball2bpl32x32_frame2.raw ball2bpl32x32_frame2_1.raw ball2bpl32x32_frame2_2.raw \
 ball2bpl32x32_frame3.raw ball2bpl32x32_frame3_1.raw ball2bpl32x32_frame3_2.raw \
 ball2bpl32x32_frame4.raw ball2bpl32x32_frame4_1.raw ball2bpl32x32_frame4_2.raw \
 Aded320x224.plt Aded320x224.raw Aded320x224_1.raw Aded320x224_2.raw \
-valkyrie320x244.raw valkyrie320x244palette.plt
+valkyrie320x244.raw valkyrie320x244palette.plt \
+Aded320x224_1.h \
+Aded320x224_2.h \
+Aded320x224palette.h \
+VampireItalialogo.h \
+VampireItalialogopalette.h \
+ball2bpl16x16_frame1.h \
+ball2bpl16x16_frame1_palette.h \
+ball2bpl16x16_frame2.h \
+ball2bpl16x16_frame3.h \
+ball2bpl16x16_frame4.h \
+ball2bpl32x32_frame1_1.h \
+ball2bpl32x32_frame1_2.h \
+ball2bpl32x32_frame2_1.h \
+ball2bpl32x32_frame2_2.h \
+ball2bpl32x32_frame3_1.h \
+ball2bpl32x32_frame3_2.h \
+ball2bpl32x32_frame4_1.h \
+ball2bpl32x32_frame4_2.h \
+intermezzoV2.h \
+intermezzoV2_palette.h \
+valkyrie320x244.h \
+valkyrie320x244palette.h
+
 
 noinst_SCRIPTS = uni54 \
 paper_cut.h \
@@ -24,7 +46,6 @@ ball2bpl16x16_frame1.h ball2bpl16x16_frame1_palette.h \
 ball2bpl16x16_frame2.h \
 ball2bpl16x16_frame3.h \
 ball2bpl16x16_frame4.h \
-ball2bpl16x16_frame5.h \
 ball2bpl32x32_frame1_1.h ball2bpl32x32_frame1_2.h \
 ball2bpl32x32_frame2_1.h ball2bpl32x32_frame2_2.h \
 ball2bpl32x32_frame3_1.h ball2bpl32x32_frame3_2.h \
@@ -82,12 +103,6 @@ ball2bpl16x16_frame4.h: ball2bpl16x16_frame4.raw
 ball2bpl16x16_frame4.raw: ball2bpl16x16_frame4.iff
 	rm -f ball2bpl16x16_frame4.raw
 	ilbm2raw ball2bpl16x16_frame4.iff ball2bpl16x16_frame4.raw
-
-#ball2bpl16x16_frame5.h: ball2bpl16x16_frame5.raw
-#	$(CC) $? $@ ball2bpl16x16_frame5
-#ball2bpl16x16_frame5.raw: ball2bpl16x16_frame5.iff
-#	rm -f ball2bpl16x16_frame5.raw
-#	ilbm2raw ball2bpl16x16_frame5.iff ball2bpl16x16_frame5.raw
 
 ball2bpl32x32_frame1_1.h: ball2bpl32x32_frame1_1.raw
 	$(CC) $? $@ ball2bpl32x32_frame1_1
