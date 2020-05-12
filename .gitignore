@@ -77,4 +77,6 @@ tests/projection
 tests/projection.o
 tests/testtrig
 tests/testtrig.o
-
+_res/bootimg.iff
+_res/bootimg.raw
+_res/bootimgpalette.plt

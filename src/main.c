@@ -2,6 +2,7 @@
 #include <ace/managers/key.h>
 #include <ace/managers/joy.h>
 
+#include "demointro.h"
 #include "casentino.h"
 #include "radiallineshiddenpart.h"
 #include "../_res/uni54.h"
@@ -13,8 +14,8 @@ void genericCreate(void) {
   //uni54_size_shared = &uni54_size;
   logWrite("Hello, Amiga!\n");
   keyCreate();
-  gamePushState(gameGsCreate,gameGsLoop,gameGsDestroy);
-  //gamePushState(radialLinesGsCreate,radialLinesGsLoop,radialLinesGsDestroy);
+  //gamePushState(gameGsCreate,gameGsLoop,gameGsDestroy);
+  gamePushState(demointroGsCreate,demointroGsLoop,demointroGsDestroy);
 }
 
 void genericProcess(void) {

@@ -66,7 +66,6 @@ Boston, MA 02111-1307, USA.
 #include "collisionsmanagement.h"
 #include "customtrigonometry.h"
 
-//#define NUM_IMAGES 8
 #define TOTAL_WIDTH 320*NUM_IMAGES
 #define RESET_SCROLL 320*(NUM_IMAGES-1)
 

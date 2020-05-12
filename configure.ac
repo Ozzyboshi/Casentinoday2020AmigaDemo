@@ -5,6 +5,7 @@ AM_INIT_AUTOMAKE([dist-zip silent-rules subdir-objects])
 AC_CONFIG_SRCDIR([src/main.c])
 
 AC_PROG_CC([m68k-amigaos-gcc])
+
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -O3 -DNDEBUG -std=gnu11')
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -Os')
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -ffast-math -DAMIGA -DACE_DEBUG=ON -Wall -Wextra -O3')

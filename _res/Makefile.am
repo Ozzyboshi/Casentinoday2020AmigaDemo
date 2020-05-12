@@ -34,7 +34,9 @@ ball2bpl32x32_frame4_2.h \
 intermezzoV2.h \
 intermezzoV2_palette.h \
 valkyrie320x244.h \
-valkyrie320x244palette.h
+valkyrie320x244palette.h \
+bootimg.h \
+bootimgpalette.h
 
 
 noinst_SCRIPTS = uni54 \
@@ -52,7 +54,9 @@ ball2bpl32x32_frame3_1.h ball2bpl32x32_frame3_2.h \
 ball2bpl32x32_frame4_1.h ball2bpl32x32_frame4_2.h \
 Aded320x224_1.h Aded320x224_2.h Aded320x224palette.h \
 valkyrie320x244.h valkyrie320x244palette.h \
-radiallinespositions.h
+radiallinespositions.h \
+bootimg.h \
+bootimgpalette.h
 
 uni54: uni54.h
 	@echo "Fonts header file generated"
@@ -192,4 +196,14 @@ valkyrie320x244.raw valkyrie320x244palette.plt: valkyrie320x244.iff
 
 radiallinespositions.h: radiallinesallpositions.bin
 	$(CC) $? $@ radiallinespositions
+
+bootimg.h: bootimg.raw
+	$(CC) $? $@ bootimg
+
+bootimgpalette.h: bootimgpalette.plt
+	$(CC) $? $@ bootimgpalette
+
+bootimg.raw bootimgpalette.plt: bootimg.iff
+	rm -f bootimg.raw bootimg.plt
+	ilbm2raw bootimg.iff bootimg.raw -p bootimgpalette.plt
 	

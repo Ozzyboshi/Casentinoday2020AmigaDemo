@@ -1,7 +1,4 @@
-c/APCopy checkers2.iff ram:checkers2.iff
-c/APCopy c/tinyview ram:tinyview
-
-run <nil: >nil: ram:tinyview checkers2.iff
-c/nwait 500
+RUN >NIL: bootimg
 casentino2020
+
 
