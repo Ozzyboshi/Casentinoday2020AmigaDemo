@@ -80,3 +80,15 @@ tests/testtrig.o
 _res/bootimg.iff
 _res/bootimg.raw
 _res/bootimgpalette.plt
+_res/Aded320x224.plt
+_res/Aded320x224.raw
+_res/Aded320x224_1.h
+_res/Aded320x224_1.raw
+_res/Aded320x224_2.h
+_res/Aded320x224_2.raw
+_res/Aded320x224palette.h
+_res/VampireItalialogo.h
+_res/bootimg.h
+_res/bootimgpalette.h
+bootimg/bootimg
+bootimg/bootimg.o
