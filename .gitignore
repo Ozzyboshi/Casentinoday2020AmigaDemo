@@ -92,3 +92,4 @@ _res/bootimg.h
 _res/bootimgpalette.h
 bootimg/bootimg
 bootimg/bootimg.o
+floppy/*.adf

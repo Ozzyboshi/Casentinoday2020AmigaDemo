@@ -288,7 +288,7 @@ void demointroGsLoop(void)
 void demointroGsDestroy(void)
 {
   // Cleanup when leaving this gamestate
-  systemUse();
+  // systemUse();
 
   //viewDestroy(s_pView);
 }

@@ -101,7 +101,8 @@ void stage1()
         
         fix16_t tSprite2VelocityMag = v2d_get_mag(&g_Sprite2Vector.tVelocity); // save old magnitude
         g_Sprite2Vector.tVelocity=tSprite2VectorDistanceNorm;
-        v2d_mul_s(&g_Sprite2Vector.tVelocity, &g_Sprite2Vector.tVelocity, tSprite2VelocityMag);
+        //v2d_mul_s(&g_Sprite2Vector.tVelocity, &g_Sprite2Vector.tVelocity, tSprite2VelocityMag);
+        v2d_mul_s(&g_Sprite2Vector.tVelocity, &g_Sprite2Vector.tVelocity, fix16_div(tSprite2VelocityMag,fix16_from_int(2)));
 
         ubSprite2Colliding=1;
       }
@@ -114,7 +115,8 @@ void stage1()
 
         fix16_t tSprite3VelocityMag = v2d_get_mag(&g_Sprite3Vector.tVelocity); // save old magnitude
         g_Sprite3Vector.tVelocity=tSprite3VectorDistanceNorm;
-        v2d_mul_s(&g_Sprite3Vector.tVelocity, &g_Sprite3Vector.tVelocity, tSprite3VelocityMag);
+        //v2d_mul_s(&g_Sprite3Vector.tVelocity, &g_Sprite3Vector.tVelocity, tSprite3VelocityMag);
+        v2d_mul_s(&g_Sprite3Vector.tVelocity, &g_Sprite3Vector.tVelocity, fix16_div(tSprite3VelocityMag,fix16_from_int(2)));
 
         ubSprite3Colliding=1;
       }
@@ -142,7 +144,8 @@ void stage1()
         //apply old magnitude (we dont want the ball to slow down)
         fix16_t tSprite1VelocityMag = v2d_get_mag(&g_Sprite1Vector.tVelocity); // save old magnitude
         g_Sprite1Vector.tVelocity=tSprite1VectorDistance;
-        v2d_mul_s(&g_Sprite1Vector.tVelocity, &g_Sprite1Vector.tVelocity, tSprite1VelocityMag);
+        //v2d_mul_s(&g_Sprite1Vector.tVelocity, &g_Sprite1Vector.tVelocity, tSprite1VelocityMag);
+        v2d_mul_s(&g_Sprite1Vector.tVelocity, &g_Sprite1Vector.tVelocity, fix16_div(tSprite1VelocityMag,fix16_from_int(2)));
 
         ubSprite1Colliding=1;
       }

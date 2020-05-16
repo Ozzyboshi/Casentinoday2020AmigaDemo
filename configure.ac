@@ -1,4 +1,4 @@
-AC_INIT([casentino2020],[0.1])
+AC_INIT([casentino2020],[1.0],[gun101@email.it])
 
 AM_INIT_AUTOMAKE([dist-zip silent-rules subdir-objects])
 
