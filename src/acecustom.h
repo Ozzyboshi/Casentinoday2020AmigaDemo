@@ -22,6 +22,8 @@ Boston, MA 02111-1307, USA.
 #include "physics.h"
 #include "global.h"
 
+#define FAST __attribute__((fast))
+
 #define ACE_MAXSPRITES 8
 
 #define ACE_SPRITE7_COLLISION_FLAG 0x8000

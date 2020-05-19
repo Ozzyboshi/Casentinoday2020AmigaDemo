@@ -1,1 +1,1 @@
-SUBDIRS = _res src bootimg floppy tests
+SUBDIRS = _res src bootimg tests floppy

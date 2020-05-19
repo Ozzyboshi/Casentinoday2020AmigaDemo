@@ -23,14 +23,17 @@ Boston, MA 02111-1307, USA.
 #include <ace/utils/font.h> // needed for tFont and font stuff
 #include <ace/managers/joy.h>
 
+#include "vectors.h"
+#include "physics.h"
 #include "../_res/radiallinespositions.h"
+#include "../_res/discocrazy.h"
 
 // Music in mod format
 //#include "../_res/paper_cut.h"  // Thx to morph of dual crew
 
 // Fonts
 //#include "../_res/uni54.h"
-//#include "shardeddata.h"
+#include "shardeddata.h"
 // ASSETS END
 
 #define COPWIDTH 8
@@ -38,6 +41,9 @@ Boston, MA 02111-1307, USA.
 
 long mt_init(const unsigned char *);
 void mt_music();
+void mt_end();
+int chan3played();
+
 void DrawlineOr(UBYTE *, int, int, int, int);
 void InitLine();
 
@@ -46,19 +52,23 @@ void InitLine();
 #define BLIT_LINE_ERASE ((NABC | NANBC | ANBC) | (SRCA | SRCC | DEST))
 
 void blitClear(tSimpleBufferManager *, UBYTE);
-void printCursorPixel(tSimpleBufferManager *, UWORD, UWORD);
 static UWORD colorHSV(UBYTE, UBYTE, UBYTE);
 
 static tView *s_pView;    // View containing all the viewports
 static tVPort *s_pVpMain; // Viewport for playfield
-static tSimpleBufferManager *s_pMainBuffer;
+static tSimpleBufferManager *s_pMainBufferRadialLines;
 static tFont *s_pFontUI;
 static tTextBitMap *s_pGlyph;
 static UBYTE s_ubBarHue = 0;
 static UWORD s_uwBarY = 44;
-static UWORD s_uwCopRawOffs;
+static UWORD s_uwCopRawOffs=0;
+static tMover g_tVector;
+static v2d g_Gravity;
 
 const unsigned char *uni54_data_shared;
+
+unsigned char* s_pMusic;
+
 
 void radialLinesGsCreate(void)
 {
@@ -82,7 +92,7 @@ void radialLinesGsCreate(void)
                                               // We won't specify height here - viewport will take remaining space.
                             TAG_END);
 
-    s_pMainBuffer = simpleBufferCreate(0,
+    s_pMainBufferRadialLines = simpleBufferCreate(0,
                                        TAG_SIMPLEBUFFER_VPORT, s_pVpMain, // Required: parent viewport
                                        TAG_SIMPLEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
                                        TAG_SIMPLEBUFFER_IS_DBLBUF, 1,
@@ -94,7 +104,7 @@ void radialLinesGsCreate(void)
     s_pVpMain->pPalette[2] = 0x0888; // Gray
     s_pVpMain->pPalette[3] = 0x0FFF; // WHITE
 
-    s_uwCopRawOffs += simpleBufferGetRawCopperlistInstructionCount(BITPLANES);
+    s_uwCopRawOffs = simpleBufferGetRawCopperlistInstructionCount(BITPLANES);
     tCopBfr *pCopBfr = s_pView->pCopList->pBackBfr;
     tCopCmd *pBarCmds = &pCopBfr->pList[s_uwCopRawOffs];
 
@@ -127,17 +137,43 @@ void radialLinesGsCreate(void)
         return;
     s_pGlyph = fontCreateTextBitMap(320, s_pFontUI->uwHeight);
     fontFillTextBitMap(s_pFontUI, s_pGlyph, "THX to Chillobits team for this awesome effect");
-    fontDrawTextBitMap(s_pMainBuffer->pFront, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);
-    fontDrawTextBitMap(s_pMainBuffer->pBack, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);
+    fontDrawTextBitMap(s_pMainBufferRadialLines->pFront, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);
+    fontDrawTextBitMap(s_pMainBufferRadialLines->pBack, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);
 
     // Load the view
     viewLoad(s_pView);
 
-    //mt_init(g_tPapercutMod_data);
+    //mt_init(discocrazy_data);
+    systemUse();
+    s_pMusic = (unsigned char*)AllocMem(g_tDiscocrazy_data_size,MEMF_CHIP|MEMF_CLEAR);
+    if (s_pMusic==NULL)
+    {
+        gameClose();
+        return ;
+    }
+    for (size_t i=0;i<g_tDiscocrazy_data_size;i++)
+        s_pMusic[i]=g_tDiscocrazy_data_data_fast[i];
+     mt_init(s_pMusic);
+
     viewProcessManagers(s_pView);
     copProcessBlocks();
 
     systemSetDma(DMAB_SPRITE, 0);
+
+    // Sprite reset
+    UWORD* p_Sprites=(UWORD*)0xdff140;
+    while (p_Sprites<=(UWORD*)0xdff17E)
+    {
+        *p_Sprites=0;
+        p_Sprites+=2;
+    }
+
+    // Init mover 
+    g_Gravity.x=fix16_div(fix16_from_int(1),fix16_from_int(50));
+    g_Gravity.y=fix16_div(fix16_from_int(1),fix16_from_int(2));
+    spriteVectorInit(&g_tVector,0,0,0,0,0,LITTLE_BALLS_MASS);
+    g_tVector.tLocation.x = 0;
+    g_tVector.tLocation.y = 0;
 }
 
 void radialLinesGsLoop(void)
@@ -154,14 +190,40 @@ void radialLinesGsLoop(void)
         return;
     }
 
-    static BYTE bCounter = 0;
-    static BYTE bIncrementer = 1;
+    //static BYTE bCounter = 0;
+    /*static BYTE bIncrementer = 1;*/
     static UBYTE *ptr = (UBYTE *)radiallinespositions_data;
-    static int frame = 0;
-    static UWORD centerOffset = 0;
+    static UWORD uwFrame = 0;
+    static UWORD uwCenterOffset = 0;
     static UWORD uwPattern = 0xFFFF;
 
-    blitClear(s_pMainBuffer, 0);
+    spriteVectorApplyForce(&g_tVector,&g_Gravity);
+    moverAddAccellerationToVelocity(&g_tVector);
+    moverAddVelocityToLocation(&g_tVector);
+    /*g_tVector.tLocation.x = 0;
+    g_tVector.tLocation.y = 0;*/
+    UWORD x=(UWORD)fix16_to_int(g_tVector.tLocation.x);
+    UWORD y=(UWORD)fix16_to_int(g_tVector.tLocation.y);
+    if (x>170)
+    {
+        g_tVector.tVelocity.x=fix16_mul(g_tVector.tVelocity.x,fix16_from_int(-1));
+        g_tVector.tVelocity.x=fix16_sub(g_tVector.tVelocity.x,g_tVector.tAccelleration.x);
+    }
+    if (y>50)
+    {
+        g_tVector.tVelocity.y=fix16_mul(g_tVector.tVelocity.y,fix16_from_int(-1));
+        g_tVector.tVelocity.y=fix16_sub(g_tVector.tVelocity.y,g_tVector.tAccelleration.y);
+       // g_tVector.tVelocity.y=fix16_sub(g_tVector.tVelocity.y,g_tVector.tAccelleration.y);
+    }
+    spriteVectorResetAccelleration(&g_tVector);
+    /*x=0;
+    y=0;*/
+
+    /*g_tVector.tLocation.x=0;
+    g_tVector.tLocation.y=0;*/
+    //InitLine();
+
+    blitClear(s_pMainBufferRadialLines, 0);
     static UBYTE i;
     for (i = 0; i < 40; i++)
     {
@@ -174,7 +236,12 @@ void radialLinesGsLoop(void)
             InitLine();
             g_pCustom->bltbdat = uwPattern;
 
-            DrawlineOr((UBYTE *)((ULONG)s_pMainBuffer->pBack->Planes[0]), 80 + bCounter + centerOffset, 80 + bCounter + centerOffset, bCounter + uwX1, bCounter + uwY1);
+            DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
+                80 + x + uwCenterOffset, 
+                80 + y + uwCenterOffset, 
+                x + uwX1, 
+                y + uwY1
+            );
         }
 
         ptr = ptr + 2;
@@ -190,10 +257,17 @@ void radialLinesGsLoop(void)
         UWORD uwY1 = (UWORD)(*(ptr + 1));
         if (uwX1 > 0 && uwY1 > 0)
         {
-            InitLine();
+            //InitLine();
             g_pCustom->bltbdat = uwPattern;
 
-            DrawlineOr((UBYTE *)((ULONG)s_pMainBuffer->pBack->Planes[0]), 80 + bCounter + centerOffset, 80 + bCounter + centerOffset, bCounter + uwX1, bCounter + uwY1);
+            DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
+                80 + x + uwCenterOffset, 
+                80 + y + uwCenterOffset, 
+                x + uwX1, 
+                y + uwY1
+            );
+
+            //DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 80 + bCounter + centerOffset, 80 + bCounter + centerOffset, bCounter + uwX1, bCounter + uwY1);
         }
         ptr = ptr + 2;
 
@@ -232,53 +306,96 @@ void radialLinesGsLoop(void)
         ptr = (UBYTE *)radiallinespositions_data;
     }
 
-    bCounter += bIncrementer;
+    /*bCounter += bIncrementer;
     if (bCounter > 70 || bCounter < 1)
-        bIncrementer *= -1;
+        bIncrementer *= -1;*/
 
     vPortWaitForEnd(s_pVpMain);
     viewProcessManagers(s_pView);
     //copProcessBlocks();
     copSwapBuffers();
 
-    frame++;
-
-    if (frame == 1)
+    //frame++;
+    if (chan3played())
     {
-        //g_pCustom->color[0] = 0x000F;
-        centerOffset = 30;
-        uwPattern = 0x0FFF;
+        if (uwFrame==0)
+        {
+            g_pCustom->color[1] = 0x0FF0;
+            uwCenterOffset = 0;
+            uwPattern = 0xFFFF;
+        }
+        else if (uwFrame==1)
+        {
+            g_pCustom->color[1] = 0x0555;
+            uwCenterOffset = 0;
+            uwPattern = 0xFFFF;
+        }
+        else if (uwFrame==2)
+        {
+            g_pCustom->color[1] = 0x00AA;
+            uwCenterOffset = 15;
+            uwPattern = 0x0F0F;
+        }
+        else if (uwFrame==3)
+        {
+            g_pCustom->color[1] = 0x0FFF;
+            uwCenterOffset = 5;
+            uwPattern = 0xF0F0;
+        }
+        else if (uwFrame==4)
+        {
+            g_pCustom->color[1] = 0x0F00;
+            uwCenterOffset = 25;
+            uwPattern = 0xFFFF;
+        }
+        uwFrame++;
+        if (uwFrame>4) uwFrame=0;
+
+        /*if (frame==0) frame=300;
+        else if (frame==300) frame=600;
+        else if (frame==600) frame=900;
+        else frame=0;*/
+    }
+
+    /*if (frame == 0)
+    {
+        g_pCustom->color[1] = 0x0FF0;
+        uwCenterOffset = 30;
+        uwPattern = 0xFFFF;
     }
     else if (frame == 300)
     {
-        //g_pCustom->color[0] = 0x0F00;
-        centerOffset = 0;
+        g_pCustom->color[1] = 0x0555;
+        uwCenterOffset = 0;
         uwPattern = 0xFFFF;
     }
     else if (frame == 600)
     {
-        //g_pCustom->color[0] = 0x00F0;
-        centerOffset = 15;
+        g_pCustom->color[1] = 0x00AA;
+        uwCenterOffset = 15;
         uwPattern = 0x0F0F;
     }
     else if (frame == 900)
     {
-        //g_pCustom->color[0] = 0x0FF0;
-        centerOffset = 5;
+        g_pCustom->color[1] = 0x0FFF;
+        uwCenterOffset = 5;
         uwPattern = 0xF0F0;
-    }
+    }*/
 
-    if (frame > 1200)
+    /*if (frame > 1200)
     {
 
         frame = 0;
-    }
+    }*/
 }
 
 void radialLinesGsDestroy(void)
 {
+    mt_end();
+    
     // Cleanup when leaving this gamestate
     systemUse();
+    FreeMem(s_pMusic,g_tDiscocrazy_data_size);
 
     fontDestroyTextBitMap(s_pGlyph);
     fontDestroy(s_pFontUI);
@@ -345,3 +462,17 @@ static UWORD colorHSV(UBYTE ubH, UBYTE ubS, UBYTE ubV)
         return (ubV << 8) | (p << 4) | q;
     }
 }
+
+// Moves a mover and his trail , It returns 1 if move was impossible because off screen
+/*UBYTE linesMove(tMover sMover)
+{
+  UWORD uwLocationX = fix16_to_int(sMover.tLocation.x);
+  UWORD uwLocationY=(UWORD) fix16_to_int(sMover.tLocation.y);
+  
+  static UWORD uwOffset = 40*NUM_IMAGES;
+
+  
+  spriteMove3((FUBYTE)sMover.ubSpriteIndex,uwLocationX,uwLocationY);
+
+
+}*/

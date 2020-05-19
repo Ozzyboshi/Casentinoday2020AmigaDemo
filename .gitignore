@@ -93,3 +93,4 @@ _res/bootimgpalette.h
 bootimg/bootimg
 bootimg/bootimg.o
 floppy/*.adf
+_res/discocrazy.h

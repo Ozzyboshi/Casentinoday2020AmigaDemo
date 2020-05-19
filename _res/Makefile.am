@@ -36,7 +36,9 @@ intermezzoV2_palette.h \
 valkyrie320x244.h \
 valkyrie320x244palette.h \
 bootimg.h \
-bootimgpalette.h
+bootimgpalette.h \
+paper_cut.h \
+discocrazy.h
 
 
 noinst_SCRIPTS = uni54 \
@@ -56,7 +58,9 @@ Aded320x224_1.h Aded320x224_2.h Aded320x224palette.h \
 valkyrie320x244.h valkyrie320x244palette.h \
 radiallinespositions.h \
 bootimg.h \
-bootimgpalette.h
+bootimgpalette.h \
+paper_cut.h \
+discocrazy.h
 
 uni54: uni54.h
 	@echo "Fonts header file generated"
@@ -64,7 +68,10 @@ uni54.h: uni54.fnt
 	$(CC) $? $@ uni54
 
 paper_cut.h: paper_cut.mod
-	$(CC) $? $@ g_tPapercutMod
+	incbin_fast.sh $? $@ g_tPapercutMod
+
+discocrazy.h: discocrazy.mod
+	incbin_fast.sh $? $@ g_tDiscocrazy_data
 
 VampireItalialogo.raw VampireItalialogopalette.plt: VampireItalialogo.iff
 	rm -f VampireItalialogo.raw VampireItalialogopalette.plt
@@ -72,13 +79,13 @@ VampireItalialogo.raw VampireItalialogopalette.plt: VampireItalialogo.iff
 VampireItalialogopalette.h: VampireItalialogopalette.plt
 	$(CC) $? $@ vampireitaliapalette
 VampireItalialogo.h: VampireItalialogo.raw
-	$(CC) $? $@ vampireitalialogo
+	incbin_fast.sh $? $@ vampireitalialogo
 
 intermezzoV2.raw intermezzoV2_palette.plt: intermezzoV2.iff
 	rm -f intermezzoV2.raw intermezzoV2_palette.plt
 	ilbm2raw intermezzoV2.iff intermezzoV2.raw -p intermezzoV2_palette.plt
 intermezzoV2.h: intermezzoV2.raw
-	$(CC) $? $@ intermezzoV2
+	incbin_fast.sh $? $@ intermezzoV2
 intermezzoV2_palette.h: intermezzoV2_palette.plt
 	$(CC) $? $@ intermezzoV2_palette
 
@@ -166,9 +173,9 @@ ball2bpl32x32_frame4_2.raw: ball2bpl32x32_frame4.raw
 	../scripts/splitiff.sh ball2bpl32x32_frame4.raw ball2bpl32x32_frame4_2.raw 32 2 2 2
 
 Aded320x224_1.h: Aded320x224_1.raw
-	$(CC) $? $@ Aded320x224_1
+	incbin_fast.sh $? $@ Aded320x224_1
 Aded320x224_2.h: Aded320x224_2.raw
-	$(CC) $? $@ Aded320x224_2
+	incbin_fast.sh $? $@ Aded320x224_2
 Aded320x224_1.raw: Aded320x224.raw
 	rm -f Aded320x224_1.raw
 	../scripts/splitiff.sh Aded320x224.raw Aded320x224_1.raw 224 40 4 0
@@ -185,7 +192,7 @@ Aded320x224.plt: Aded320x224.iff
 	ilbm2raw Aded320x224.iff Aded320x224.raw -p Aded320x224.plt
 
 valkyrie320x244.h: valkyrie320x244.raw
-	$(CC) $? $@ valkyrie320x244
+	incbin_fast.sh $? $@ valkyrie320x244
 
 valkyrie320x244palette.h: valkyrie320x244palette.plt
 	$(CC) $? $@ valkyrie320x244palette
@@ -195,10 +202,10 @@ valkyrie320x244.raw valkyrie320x244palette.plt: valkyrie320x244.iff
 	ilbm2raw valkyrie320x244.iff valkyrie320x244.raw -p valkyrie320x244palette.plt
 
 radiallinespositions.h: radiallinesallpositions.bin
-	$(CC) $? $@ radiallinespositions
+	incbin_fast.sh $? $@ radiallinespositions
 
 bootimg.h: bootimg.raw
-	$(CC) $? $@ bootimg
+	incbin_fast.sh $? $@ bootimg
 
 bootimgpalette.h: bootimgpalette.plt
 	$(CC) $? $@ bootimgpalette

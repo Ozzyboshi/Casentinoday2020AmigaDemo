@@ -1,0 +1,19 @@
+INSTRUCTIONS:
+
+I know usually demos and intros are not interactive but this is an exception.
+STAGE 1: Bouncing ball
+- a : blow wind to the left
+- s : stop blowing wind
+- d : blow wind to the right
+STAGE 2: Rotating cube
+- use wasd for moving the cube around the screen
+- q : shrink the cube
+- r : expand the cube
+STAGE 3: Friction
+- d : move balls to the right
+- a : move balls to the left
+STAGE 4: Attraction
+- wasd will move the big ball around the screen, little ball will be attracted to the big ball
+ALL STAGES:
+- esc or left mouse button: return to the OS
+- v : the hidden part kicks in

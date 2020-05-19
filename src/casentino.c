@@ -56,7 +56,7 @@ Boston, MA 02111-1307, USA.
 //#include "../_res/uni54.h"
 //#include "shardeddata.h"
 // ASSETS END
- const unsigned char* uni54_data_shared;
+const unsigned char* uni54_data_shared;
 
 #include "vectors.h"
 #include "acecustom.h"
@@ -74,15 +74,17 @@ Boston, MA 02111-1307, USA.
 
 #define STAR_SPRITE_INDEX 6
 
-#ifdef SOUND
+//#ifdef SOUND
+void initSound();
 void mt_music();
 void mt_end();
-#endif
+//#endif
 
 void copSetMoveRaw(tCopMoveCmd *, UWORD, UWORD);
 
 void moverBounce(tMover*);
 void copyToMainBpl(const unsigned char*,const UBYTE, const UBYTE);
+void copyToMainBplFromFast(const unsigned char*,const UBYTE, const UBYTE);
 void nextStage();
 
 long mt_init(const unsigned char*);
@@ -95,6 +97,8 @@ static inline void changeCopperColor(tView *s_pView, tCopBlock * myBlock,const u
   uwColTmp=uwColTmp|p_PaletteFrom[uwPaletteColorStart*2+1];
   copChangeMove(s_pView->pCopList, myBlock, uwCopblockIndex, &g_pCustom->color[uwPaletteColorStart], uwColTmp);
 }
+
+tView *g_pViewIntro;
 
 tMover g_Sprite0Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
 tMover g_Sprite1Vector = {0,{0,0},{0,0},{0,0},{0,0},0,0,0 };
@@ -115,10 +119,7 @@ static UWORD g_uwBlitModd = RESET_SCROLL/8;
 static tFont *s_pFontUI;
 static tTextBitMap *s_pGlyph;
 static tCameraManager *s_pCamera;
-
-#if 0
-static tCopBlock* sprite8BlockStart,*sprite8BlockEnd;
-#endif
+static unsigned char* s_pMusic;
 
 tCameraManager *s_pCameraMain;
 
@@ -222,9 +223,9 @@ void gameGsCreate(void) {
 
   s_pGlyph = fontCreateTextBitMap(250, s_pFontUI->uwHeight);
 
-  copyToMainBpl(valkyrie320x244_data,0,4);                            // Screen 0 valchirie img 320px
+  copyToMainBplFromFast(valkyrie320x244_data_fast,0,4);                            // Screen 0 valchirie img 320px
 
-  copyToMainBpl(intermezzoV2_data,1,4);                              // Screen 1 image intermezzoV2
+  copyToMainBplFromFast(intermezzoV2_data_fast,1,4);                              // Screen 1 image intermezzoV2
   /*PRINTF(1, 0, "- Showcase Morphos (Ozzyboshi)")                     // Screen 1 empty for text
   PRINTF(1, 10,"- Showcase Vampire (DrProcton)")
   PRINTF(1, 20,"- Showcase A1000 (Z3K)")
@@ -234,7 +235,7 @@ void gameGsCreate(void) {
   PRINTF(1, 80,"Press D to blow wind to right")
   PRINTF(1, 90,"Press Z to enable disable collision on first animation")*/
                                           
-  copyToMainBpl(vampireitalialogo_data,2,3);                          // Screen 2 vampireitalia logo 320px 8 cols
+  copyToMainBplFromFast(vampireitalialogo_data_fast,2,3);                          // Screen 2 vampireitalia logo 320px 8 cols
 
   PRINTF(3, 10,"- Programma dell'evento")                             // Screen 3 empty for text
   PRINTF(3, 30,"- Ore 11 : Ritrovo e presentazione evento")
@@ -246,17 +247,18 @@ void gameGsCreate(void) {
   PRINTF(3, 90,"- Ore 16 : Foto ricordo e tutti a casa")
   PRINTF(3, 110,"EVENTO RINVIATO AL PROSSIMO ANNO CAUSA CORONAVIRUS")
                                             
-  copyToMainBpl(Aded320x224_1_data,4,4);                              // Screen 4 d&d 640px part one
-  copyToMainBpl(Aded320x224_2_data,5,4);                              // Screen 5 d&d 640px part two
+  copyToMainBplFromFast(Aded320x224_1_data_fast,4,4);                              // Screen 4 d&d 640px part one
+  copyToMainBplFromFast(Aded320x224_2_data_fast,5,4);                              // Screen 5 d&d 640px part two
   PRINTF(6,10,"Code : Ozzyboshi")                                     // Screen 6 empty for text
   PRINTF(6,20,"Background artwork : Dr.Procton")
   PRINTF(6,30,"Ball sprites : Z3k")
   PRINTF(6,40,"Music : Stolen from Morph of dual crew")
-  PRINTF(6,50,"Physics math taken from Daniel Shiffman book 'Nature of code'")
-  PRINTF(6,80,"Source code of this invitintro available at : ")
-  PRINTF(6,90,"https://github.com/Ozzyboshi/Casentinoday2020AmigaDemo")
+  PRINTF(6,40,"Hidden Music: Almost stolen from FBY")
+  PRINTF(6,60,"Physics math taken from Daniel Shiffman book 'Nature of code'")
+  PRINTF(6,90,"Source code of this invitintro available at : ")
+  PRINTF(6,100,"https://github.com/Ozzyboshi/Casentinoday2020AmigaDemo")
 
-  copyToMainBpl(valkyrie320x244_data,7,4);                            // Screen 7 valchirie img 320px
+  copyToMainBplFromFast(valkyrie320x244_data_fast,7,4);                            // Screen 7 valchirie img 320px
 
   // Init the gravity force
   g_Gravity.x=fix16_div(fix16_from_int(0),fix16_from_int(10));
@@ -267,7 +269,7 @@ void gameGsCreate(void) {
   g_Wind.y=fix16_div(fix16_from_int(0),fix16_from_int(10));
   g_WindStep=fix16_div(fix16_from_int(1),fix16_from_int(30));
 
-  fontDrawStr(s_pScoreBuffer->pBack, s_pFontUI, 10,10,"                                                                   Vampireitalia community invites you to CASENTINO DAY 2020 - LOCALITA BADIA PRATAGLIA (AR) - 10/10/2020 - GPS: XXXX XXXX XXXX", 1, FONT_LAZY );
+  fontDrawStr(s_pScoreBuffer->pBack, s_pFontUI, 10,10,"                                                                   Vampireitalia community invites you to CASENTINO DAY 2020 - LOCALITA BADIA PRATAGLIA (AR) Ristorante \"Il capanno \"- 10/10/2020", 1, FONT_LAZY );
   
   // we need a camera to simulate scrolling
   s_pCamera = s_pScoreBuffer->pCamera;
@@ -318,10 +320,6 @@ void gameGsCreate(void) {
 
   // Load the view
   viewLoad(s_pView);
-
-//#ifdef SOUND  
-  mt_init(g_tPapercutMod_data);
-//#endif
 
   spriteVectorInit(&g_Sprite1Vector,1,125,115,0,0,LITTLE_BALLS_MASS);
   copBlockEnableSpriteFull(s_pView->pCopList, 1, (UBYTE*)ball2bpl16x16_frame1_data,sizeof(ball2bpl16x16_frame1_data));
@@ -392,6 +390,8 @@ void gameGsCreate(void) {
   CollisionInit();
   //nextStage();
 
+  initSound();
+
 }
 
 void gameGsLoop(void) {
@@ -456,7 +456,9 @@ void gameGsLoop(void) {
     // animate sprites
     if (g_ubVBallAnimEnabled)
     {
-      if (bSpriteCounter==0)         memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
+      if (bSpriteCounter==0)        { memcpy(s_pAceSprites[3].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size); 
+      //memcpy(s_pAceSprites[5].pSpriteData+4,ball2bpl32x32_frame1_2_data,sizeof(ball2bpl32x32_frame1_2_data)); 
+      }
       else if (bSpriteCounter==1)    memcpy(s_pAceSprites[2].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
       else if (bSpriteCounter==2)    memcpy(s_pAceSprites[1].pSpriteData+4,ball2bpl16x16_frame1_data,ball2bpl16x16_frame1_size);
       else if (bSpriteCounter==3)
@@ -626,14 +628,19 @@ void gameGsLoop(void) {
 }
 
 void gameGsDestroy(void) {
+
+  mt_end();
+
   // Cleanup when leaving this gamestate
   systemUse();
+  FreeMem(s_pMusic,g_tPapercutMod_size);
 
   // Free sprite stuff
   copBlockSpritesFree();
 
   // This will also destroy all associated viewports and viewport managers
   viewDestroy(s_pView);
+  if (g_pViewIntro) viewDestroy(g_pViewIntro);
 }
 
 // Function to copy data to a main bitplane
@@ -661,6 +668,52 @@ void copyToMainBpl(const unsigned char* pData,const UBYTE ubSlot,const UBYTE ubM
   return ;
 }
 
+// Function to copy data to a main bitplane
+// Pass ubMaxBitplanes = 0 to use all available bitplanes in the bitmap
+void copyToMainBplFromFast(const unsigned char* pData,const UBYTE ubSlot,const UBYTE ubMaxBitplanes)
+{
+  const UWORD dmod = g_uwBlitModd;
+  UBYTE ubBitplaneCounter;
+  size_t iSize ;
+
+  if (ubMaxBitplanes==0) iSize = 40*224*s_pMainBuffer->pBack->Depth;
+  else iSize = 40*224*ubMaxBitplanes;
+  
+  UBYTE* pTmp = (UBYTE*)AllocMem(iSize,MEMF_CHIP);
+  //memcpy((void*)pTmp,(void*)pData,iSize);
+  for (size_t i = 0;i<iSize;i++)
+    pTmp[i]=pData[i];
+
+  for (ubBitplaneCounter=0;ubBitplaneCounter<s_pMainBuffer->pBack->Depth;ubBitplaneCounter++)
+  {
+    blitWait();
+    g_pCustom->bltcon0 = 0x09F0;
+    g_pCustom->bltcon1 = 0x0000;
+    g_pCustom->bltafwm = 0xFFFF;
+    g_pCustom->bltalwm = 0xFFFF;
+    g_pCustom->bltamod = 0x0000;
+    g_pCustom->bltbmod = 0x0000;
+    g_pCustom->bltcmod = 0x0000;
+    g_pCustom->bltdmod = dmod;
+    g_pCustom->bltapt = (UBYTE*)((ULONG)&pTmp[40*224*ubBitplaneCounter]);
+    g_pCustom->bltdpt = (UBYTE*)((ULONG)s_pMainBuffer->pBack->Planes[ubBitplaneCounter]+(40*ubSlot));
+    g_pCustom->bltsize = 0x3814;
+    if (ubMaxBitplanes>0 && ubBitplaneCounter+1>=ubMaxBitplanes)
+    {
+      blitWait();
+      systemUse();
+      FreeMem(pTmp,iSize);
+      systemUnuse();
+      return ;
+    }
+  }
+  blitWait();
+  systemUse();
+  FreeMem(pTmp,iSize);
+  systemUnuse();
+  return ;
+}
+
 // Switch to next stage
 void nextStage()
 {
@@ -681,4 +734,24 @@ void copSetMoveRaw(tCopMoveCmd *pMoveCmd, UWORD uwReg, UWORD uwValue)
   pMoveCmd->bfUnused = 0;
 	pMoveCmd->bfDestAddr = uwReg;
 	pMoveCmd->bfValue = uwValue;
+}
+
+void initSound()
+{
+  //#ifdef SOUND 
+//systemUse();
+  s_pMusic = (unsigned char*)AllocMem(g_tPapercutMod_size,MEMF_CHIP|MEMF_CLEAR);
+  if (s_pMusic==NULL)
+  {
+    gameClose();
+    return ;
+  }
+  for (size_t i=0;i<g_tPapercutMod_size;i++)
+    s_pMusic[i]=g_tPapercutMod_data_fast[i];
+
+  //memcpy(s_pMusic,g_tPapercutMod_data_fast,g_tPapercutMod_size);
+//systemUnuse();
+ mt_init(s_pMusic);
+  //mt_init(g_tPapercutMod_data);
+//#endif
 }

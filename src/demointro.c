@@ -32,7 +32,7 @@ Boston, MA 02111-1307, USA.
 // #include "../_res/valkyrie320x244palette.h"
 // #include "../_res/valchiria320x256.h"
 
-static tView *s_pView; // View containing all the viewports
+tView *g_pViewIntro=NULL; // View containing all the viewports
 
 static tVPort *s_pVpMain; // Viewport for playfield
 static tSimpleBufferManager *s_pMainBuffer;
@@ -71,7 +71,9 @@ inline void myCopSetMove(tCopMoveCmd *pMoveCmd, UWORD uwValue) {
 }
 
 void setBplModuleAt3(UWORD, UWORD, UBYTE);
-void copyToMainBplIntro(const unsigned char *, const UBYTE, const UBYTE);
+//void copyToMainBplIntro(const unsigned char *, const UBYTE, const UBYTE);
+void copyToMainBplFromFastIntro(const unsigned char* ,const UBYTE ,const UBYTE );
+
 UWORD getConsecutiveRowsAfter(UWORD);
 
 void demointroGsCreate(void)
@@ -83,14 +85,14 @@ void demointroGsCreate(void)
                      1                                                 // Just to be sure
   );
 
-  s_pView = viewCreate(0,
+  g_pViewIntro = viewCreate(0,
                        TAG_VIEW_GLOBAL_CLUT, 1,                      // Same Color LookUp Table for all viewports
                        TAG_VIEW_COPLIST_MODE, VIEW_COPLIST_MODE_RAW, // Let's rock with a raw copperlist
                        TAG_VIEW_COPLIST_RAW_COUNT, ulRawSize,        // rawsize is so much important in a raw copperlist, without this it will crash everything in the world
                        TAG_END);
 
   s_pVpMain = vPortCreate(0,
-                          TAG_VPORT_VIEW, s_pView,
+                          TAG_VPORT_VIEW, g_pViewIntro,
                           TAG_VPORT_BPP, 3, // 3 bits per pixel, 8 colors
                           // We won't specify height here - viewport will take remaining space.
                           TAG_END);
@@ -128,13 +130,13 @@ void demointroGsCreate(void)
   /*for (UBYTE ubContColor=0;ubContColor< 8;ubContColor++)
     s_pVpMain->pPalette[ubContColor]=s_pPaletteRef[ubContColor];*/
 
-  copyToMainBplIntro(bootimg_data, 0, 3);
+  copyToMainBplFromFastIntro(bootimg_data_fast, 0, 3);
 
   // We don't need anything from OS anymore
   systemUnuse();
 
   // This is the glue, without this we cant change copperlist
-  tCopBfr *pCopBfr = s_pView->pCopList->pBackBfr;
+  tCopBfr *pCopBfr = g_pViewIntro->pCopList->pBackBfr;
   s_pModCmds = &pCopBfr->pList[s_uwCopRawOffs];
 
   // Reset copperlist!!!!!
@@ -144,12 +146,12 @@ void demointroGsCreate(void)
   // Copy the same thing to front buffer, so that copperlist has the same
   // structure on both buffers and we can just update parts we need
   CopyMemQuick(
-      s_pView->pCopList->pBackBfr->pList,
-      s_pView->pCopList->pFrontBfr->pList,
-      s_pView->pCopList->pBackBfr->uwAllocSize);
+      g_pViewIntro->pCopList->pBackBfr->pList,
+      g_pViewIntro->pCopList->pFrontBfr->pList,
+      g_pViewIntro->pCopList->pBackBfr->uwAllocSize);
 
   // Load the view
-  viewLoad(s_pView);
+  viewLoad(g_pViewIntro);
 }
 
 void demointroGsLoop(void)
@@ -295,7 +297,7 @@ void demointroGsDestroy(void)
 
 // Function to copy data to a main bitplane
 // Pass ubMaxBitplanes = 0 to use all available bitplanes in the bitmap
-void copyToMainBplIntro(const unsigned char *pData, const UBYTE ubSlot, const UBYTE ubMaxBitplanes)
+/*void copyToMainBplIntro(const unsigned char *pData, const UBYTE ubSlot, const UBYTE ubMaxBitplanes)
 {
   UBYTE ubBitplaneCounter;
   for (ubBitplaneCounter = 0; ubBitplaneCounter < s_pMainBuffer->pBack->Depth; ubBitplaneCounter++)
@@ -316,6 +318,45 @@ void copyToMainBplIntro(const unsigned char *pData, const UBYTE ubSlot, const UB
       return;
   }
   return;
+}*/
+
+// Function to copy data to a main bitplane
+// Pass ubMaxBitplanes = 0 to use all available bitplanes in the bitmap
+void copyToMainBplFromFastIntro(const unsigned char* pData,const UBYTE ubSlot,const UBYTE ubMaxBitplanes)
+{
+  UBYTE ubBitplaneCounter;
+  size_t iSize ;
+
+  if (ubMaxBitplanes==0) iSize = 40*256*s_pMainBuffer->pBack->Depth;
+  else iSize = 40*256*ubMaxBitplanes;
+  
+  UBYTE* pTmp = (UBYTE*)AllocMem(iSize,MEMF_CHIP);
+  memcpy((void*)pTmp,(void*)pData,iSize);
+
+  for (ubBitplaneCounter=0;ubBitplaneCounter<s_pMainBuffer->pBack->Depth;ubBitplaneCounter++)
+  {
+    blitWait();
+    g_pCustom->bltcon0 = 0x09F0;
+    g_pCustom->bltcon1 = 0x0000;
+    g_pCustom->bltafwm = 0xFFFF;
+    g_pCustom->bltalwm = 0xFFFF;
+    g_pCustom->bltamod = 0x0000;
+    g_pCustom->bltbmod = 0x0000;
+    g_pCustom->bltcmod = 0x0000;
+    g_pCustom->bltdmod = 0x0000;
+    g_pCustom->bltapt = (UBYTE*)((ULONG)&pTmp[40*256*ubBitplaneCounter]);
+    g_pCustom->bltdpt = (UBYTE*)((ULONG)s_pMainBuffer->pBack->Planes[ubBitplaneCounter]+(40*ubSlot));
+    g_pCustom->bltsize = 0x4014;
+    if (ubMaxBitplanes>0 && ubBitplaneCounter+1>=ubMaxBitplanes)
+    {
+      blitWait();
+      FreeMem(pTmp,iSize);
+      return ;
+    }
+  }
+  blitWait();
+  FreeMem(pTmp,iSize);
+  return ;
 }
 
 void setBplModuleAt3(UWORD uwIndex, UWORD uwModValue, UBYTE ubDoWait)

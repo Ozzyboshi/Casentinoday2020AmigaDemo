@@ -1,3 +1,5 @@
+type readme
+wait 10
 RUN >NIL: bootimg
 casentino2020
 
