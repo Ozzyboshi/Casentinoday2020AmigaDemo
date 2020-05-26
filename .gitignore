@@ -3,8 +3,6 @@ Makefile.in
 aclocal.m4
 config.h
 src/Makefile.in
-src/Makefile.in
-Makefile
 autom4te.cache/
 config.log
 config.status
@@ -13,7 +11,6 @@ _res/Makefile
 data/icons/Makefile
 src/.deps
 src/Makefile
-src/guake-indicator
 src/*.o
 compile
 config.h.in
@@ -22,7 +19,6 @@ missing
 stamp-h1
 config.h.in~
 src/casentino2020
-casentino2020.adf
 floppy/casentino2020.adf
 core
 _res/bkup
@@ -77,7 +73,6 @@ tests/projection
 tests/projection.o
 tests/testtrig
 tests/testtrig.o
-_res/bootimg.iff
 _res/bootimg.raw
 _res/bootimgpalette.plt
 _res/Aded320x224.plt
@@ -94,3 +89,12 @@ bootimg/bootimg
 bootimg/bootimg.o
 floppy/*.adf
 _res/discocrazy.h
+./Makefile
+_res/Makefile
+floppy/Makefile
+tests/Makefile
+tests/.deps/3dcube.Po
+tests/.deps/matrixperformance.Po
+tests/.deps/projection.Po
+tests/.deps/testtrig.Po
+tests/.deps
