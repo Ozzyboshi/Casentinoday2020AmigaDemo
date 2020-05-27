@@ -211,6 +211,6 @@ bootimgpalette.h: bootimgpalette.plt
 	$(CC) $? $@ bootimgpalette
 
 bootimg.raw bootimgpalette.plt: bootimg.iff
-	rm -f bootimg.raw bootimg.plt
+	rm -f bootimg.raw bootimgpalette.plt
 	ilbm2raw bootimg.iff bootimg.raw -p bootimgpalette.plt
 	

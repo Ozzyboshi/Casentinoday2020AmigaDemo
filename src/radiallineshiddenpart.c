@@ -28,16 +28,14 @@ Boston, MA 02111-1307, USA.
 #include "../_res/radiallinespositions.h"
 #include "../_res/discocrazy.h"
 
-// Music in mod format
-//#include "../_res/paper_cut.h"  // Thx to morph of dual crew
-
 // Fonts
-//#include "../_res/uni54.h"
-#include "shardeddata.h"
+#include "../_res/fonts.h"
+
 // ASSETS END
 
 #define COPWIDTH 8
 #define BITPLANES 2
+#define TEXTYPOS 220
 
 long mt_init(const unsigned char *);
 void mt_music();
@@ -47,12 +45,10 @@ int chan3played();
 void DrawlineOr(UBYTE *, int, int, int, int);
 void InitLine();
 
-#define BLIT_LINE_OR ((ABC | ABNC | NABC | NANBC) | (SRCA | SRCC | DEST))
-#define BLIT_LINE_XOR ((ABNC | NABC | NANBC) | (SRCA | SRCC | DEST))
-#define BLIT_LINE_ERASE ((NABC | NANBC | ANBC) | (SRCA | SRCC | DEST))
-
 void blitClear(tSimpleBufferManager *, UBYTE);
 static UWORD colorHSV(UBYTE, UBYTE, UBYTE);
+void printCharToRight(char);
+void scorri();
 
 static tView *s_pView;    // View containing all the viewports
 static tVPort *s_pVpMain; // Viewport for playfield
@@ -64,6 +60,7 @@ static UWORD s_uwBarY = 44;
 static UWORD s_uwCopRawOffs=0;
 static tMover g_tVector;
 static v2d g_Gravity;
+static const char g_cPhrase[]={" THANKS TO OFFENCE FOR THIS AWESOME EFFECT AND ABOVE ALL CONGRATULATIONS FOR THE RECENT WIN IN THE ONLINE REVISION 2020 AMIGA DEMO COMPETITION WITH \"CHILLOBITS\", YOU GUYS ARE THE BEST! HOWEVER IT WOULD BE VERY APPRECIATED A NEW AMIGA600 FRIENDLY RELEASE       THX TO FBY FOR THIS AWESOME MUSIC, I DIDNT GET YOUR APPROVATION TO INCLUDE YOUR MOD IN THIS DEMO, BLAME YOUR FRIEND Z3K WHO GAVE ME PERMISSION TO USE IT          YOU HAVE REACHED THE END OF THIS INVITATION DEMO, CLICK LEFT MOUSE BUTTON TO EXIT                \n"};
 
 const unsigned char *uni54_data_shared;
 
@@ -97,11 +94,12 @@ void radialLinesGsCreate(void)
                                        TAG_SIMPLEBUFFER_BITMAP_FLAGS, BMF_CLEAR,
                                        TAG_SIMPLEBUFFER_IS_DBLBUF, 1,
                                        TAG_SIMPLEBUFFER_COPLIST_OFFSET, 0, // <-- Important in RAW mode
+                                       TAG_SIMPLEBUFFER_BOUND_WIDTH,320+0,
                                        TAG_END);
 
     s_pVpMain->pPalette[0] = 0x0000; // First color is also border color
     s_pVpMain->pPalette[1] = 0x0FF0; // Yellow
-    s_pVpMain->pPalette[2] = 0x0888; // Gray
+    s_pVpMain->pPalette[2] = 0x0BBB; 
     s_pVpMain->pPalette[3] = 0x0FFF; // WHITE
 
     s_uwCopRawOffs = simpleBufferGetRawCopperlistInstructionCount(BITPLANES);
@@ -132,13 +130,13 @@ void radialLinesGsCreate(void)
     // We don't need anything from OS anymore
     systemUnuse();
 
-    s_pFontUI = fontCreateFromMem((UBYTE *)uni54_data_shared);
+   /* s_pFontUI = fontCreateFromMem((UBYTE *)uni54_data_shared);
     if (s_pFontUI == NULL)
         return;
     s_pGlyph = fontCreateTextBitMap(320, s_pFontUI->uwHeight);
     fontFillTextBitMap(s_pFontUI, s_pGlyph, "THX to Chillobits team for this awesome effect");
     fontDrawTextBitMap(s_pMainBufferRadialLines->pFront, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);
-    fontDrawTextBitMap(s_pMainBufferRadialLines->pBack, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);
+    fontDrawTextBitMap(s_pMainBufferRadialLines->pBack, s_pGlyph, 150, 230, 3, FONT_CENTER | FONT_LAZY);*/
 
     // Load the view
     viewLoad(s_pView);
@@ -190,8 +188,7 @@ void radialLinesGsLoop(void)
         return;
     }
 
-    //static BYTE bCounter = 0;
-    /*static BYTE bIncrementer = 1;*/
+    static BYTE bCounter = 0;
     static UBYTE *ptr = (UBYTE *)radiallinespositions_data;
     static UWORD uwFrame = 0;
     static UWORD uwCenterOffset = 0;
@@ -200,8 +197,7 @@ void radialLinesGsLoop(void)
     spriteVectorApplyForce(&g_tVector,&g_Gravity);
     moverAddAccellerationToVelocity(&g_tVector);
     moverAddVelocityToLocation(&g_tVector);
-    /*g_tVector.tLocation.x = 0;
-    g_tVector.tLocation.y = 0;*/
+    
     UWORD x=(UWORD)fix16_to_int(g_tVector.tLocation.x);
     UWORD y=(UWORD)fix16_to_int(g_tVector.tLocation.y);
     if (x>170)
@@ -213,21 +209,27 @@ void radialLinesGsLoop(void)
     {
         g_tVector.tVelocity.y=fix16_mul(g_tVector.tVelocity.y,fix16_from_int(-1));
         g_tVector.tVelocity.y=fix16_sub(g_tVector.tVelocity.y,g_tVector.tAccelleration.y);
-       // g_tVector.tVelocity.y=fix16_sub(g_tVector.tVelocity.y,g_tVector.tAccelleration.y);
     }
     spriteVectorResetAccelleration(&g_tVector);
-    /*x=0;
-    y=0;*/
-
-    /*g_tVector.tLocation.x=0;
-    g_tVector.tLocation.y=0;*/
-    //InitLine();
-
+    
     blitClear(s_pMainBufferRadialLines, 0);
+    scorri();
+
     static UBYTE i;
     for (i = 0; i < 40; i++)
     {
-
+        if (i==10)
+        { 
+            if (bCounter==0 )
+            {
+                //static const char* pTextPointer = &g_cPhrase[0];
+                static int iCharCounter = 0;
+                printCharToRight(g_cPhrase[iCharCounter++]);
+                if (g_cPhrase[iCharCounter]=='\n') iCharCounter = 0;
+                /*pTextPointer++;
+                if (*pTextPointer=='\n') pTextPointer=g_cPhrase;*/
+            }
+        }
         UWORD uwX1 = (UWORD)(*ptr);
         UWORD uwY1 = (UWORD)(*(ptr + 1));
 
@@ -267,7 +269,6 @@ void radialLinesGsLoop(void)
                 y + uwY1
             );
 
-            //DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 80 + bCounter + centerOffset, 80 + bCounter + centerOffset, bCounter + uwX1, bCounter + uwY1);
         }
         ptr = ptr + 2;
 
@@ -301,21 +302,22 @@ void radialLinesGsLoop(void)
         }
     }
 
+
     if (ptr > radiallinespositions_data + radiallinespositions_size - 2)
     {
         ptr = (UBYTE *)radiallinespositions_data;
     }
 
-    /*bCounter += bIncrementer;
-    if (bCounter > 70 || bCounter < 1)
-        bIncrementer *= -1;*/
+    
+
+    bCounter ++;
+    if (bCounter > 15) bCounter = 0;
 
     vPortWaitForEnd(s_pVpMain);
     viewProcessManagers(s_pView);
-    //copProcessBlocks();
+    
     copSwapBuffers();
 
-    //frame++;
     if (chan3played())
     {
         if (uwFrame==0)
@@ -350,43 +352,7 @@ void radialLinesGsLoop(void)
         }
         uwFrame++;
         if (uwFrame>4) uwFrame=0;
-
-        /*if (frame==0) frame=300;
-        else if (frame==300) frame=600;
-        else if (frame==600) frame=900;
-        else frame=0;*/
     }
-
-    /*if (frame == 0)
-    {
-        g_pCustom->color[1] = 0x0FF0;
-        uwCenterOffset = 30;
-        uwPattern = 0xFFFF;
-    }
-    else if (frame == 300)
-    {
-        g_pCustom->color[1] = 0x0555;
-        uwCenterOffset = 0;
-        uwPattern = 0xFFFF;
-    }
-    else if (frame == 600)
-    {
-        g_pCustom->color[1] = 0x00AA;
-        uwCenterOffset = 15;
-        uwPattern = 0x0F0F;
-    }
-    else if (frame == 900)
-    {
-        g_pCustom->color[1] = 0x0FFF;
-        uwCenterOffset = 5;
-        uwPattern = 0xF0F0;
-    }*/
-
-    /*if (frame > 1200)
-    {
-
-        frame = 0;
-    }*/
 }
 
 void radialLinesGsDestroy(void)
@@ -407,6 +373,7 @@ void radialLinesGsDestroy(void)
 void blitClear(tSimpleBufferManager *buffer, UBYTE nBitplane)
 {
     blitWait();
+    //waitblit();
     g_pCustom->bltcon0 = 0x0100;
     g_pCustom->bltcon1 = 0x0000;
     g_pCustom->bltafwm = 0xFFFF;
@@ -463,16 +430,77 @@ static UWORD colorHSV(UBYTE ubH, UBYTE ubS, UBYTE ubV)
     }
 }
 
-// Moves a mover and his trail , It returns 1 if move was impossible because off screen
-/*UBYTE linesMove(tMover sMover)
+void printCharToRight(char carToPrint)
 {
-  UWORD uwLocationX = fix16_to_int(sMover.tLocation.x);
-  UWORD uwLocationY=(UWORD) fix16_to_int(sMover.tLocation.y);
+  int carToPrintOffset = ((int)carToPrint-0x20)*40;     // Prima tolgo 0x20 perché il primo carattere nel file di ramjam è uno spazio, poi moltiplico per 40 bytes perché i caratteri sono 2 bytes*20 righe
+  UBYTE* firstBitPlane = (UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[1]);
   
-  static UWORD uwOffset = 40*NUM_IMAGES;
-
+  // vogliamo stampare all'estrema destra quindi aggiungiamo 38
+  firstBitPlane += 38;
+  firstBitPlane += 40*TEXTYPOS;
   
-  spriteMove3((FUBYTE)sMover.ubSpriteIndex,uwLocationX,uwLocationY);
+  for (int i=0;i<20;i++)
+  {
+      *firstBitPlane = (UBYTE)fonts_data[carToPrintOffset];
+      firstBitPlane++;
+      *firstBitPlane = (UBYTE)fonts_data[carToPrintOffset+1];
+      firstBitPlane++;
+      carToPrintOffset+=2;
+      firstBitPlane+=38;
+  }
+}
+
+void scorri()
+{
+   /* MoveText
+	move.l #PIC+((20*(0+20))-1)*2,d0
+	btst #6,$dff002
+waitblitmovetext
+	btst #6,$dff002
+	bne.s waitblitmovetext
+	
+	move.l #$19f00002,$dff040 ; BLTCON0 and BLTCON1
+				  ; copy from chan A to chan D
+				  ; with 1 pixel left shift
+	
+	move.l #$ffff7fff,$dff044 ; delete leftmost pixel
+	
+	move.l d0,$dff050	  ; load source
+	move.l d0,$dff054	  ; load destination
+	
+	move.l #$00000000,$dff064 ; BTLAMOD and BTLDMOD will be zeroed
+				  ; because the blitter operation will take
+				  ; the whole screen width
+				  
+	move.w #(20*64)+20,$dff058 ; the rectangle we are blitting it is 20px
+				  ; high (like the font heght) and
+				  ; 20 bytes wide (the whole screen)
+	
+	rts*/
+	
+	blitWait();
+	//waitblit();
+	g_pCustom->bltcon0 = 0x19f0;
+	g_pCustom->bltcon1 = 0x0002;
+	
+	g_pCustom->bltafwm = 0xffff;
+	g_pCustom->bltalwm = 0x7fff;
+	
+	g_pCustom->bltamod = 0x0000;
+    g_pCustom->bltbmod = 0x0000;
+    g_pCustom->bltcmod = 0x0000;
+    g_pCustom->bltdmod = 0x0000;
+    
+    UBYTE* firstBitPlane = (UBYTE *)((ULONG)s_pMainBufferRadialLines->pFront->Planes[1])+((20*20-1)*2);
+    UBYTE* firstBitPlane2 = (UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[1])+((20*20-1)*2);
+
+    firstBitPlane += 40*TEXTYPOS;
+    firstBitPlane2 += 40*TEXTYPOS;
+    
+    g_pCustom->bltdpt = firstBitPlane2;
+    g_pCustom->bltapt = firstBitPlane;
+    
+    g_pCustom->bltsize = 0x0514;
+}
 
 
-}*/
