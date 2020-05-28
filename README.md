@@ -1,4 +1,4 @@
-# Casentinoday2020AmigaDemo
+# Casentino Day 2020 - AmigaDemo
 
 This is a small and simple invitation intro for Casentino day 2020, a small gathering in central Italy meant for Amiga enthusiasts that takes place every year in late summer (usually last week of August).   
 Actually this yea, Casentino day turned into an online only event due Coronavirus concerns.
