@@ -28,6 +28,54 @@ Download the adf file from the github releases section or just copy the executab
 
 ![screenshots/workbench3-full-2005281255-01.png](screenshots/workbench3-full-2005281255-01.png)
 
+### How to compile
+
+```
+~$ mkdir compile
+~$ cd compile/
+~/compile$ git clone https://github.com/Ozzyboshi/Casentinoday2020AmigaDemo.git
+Cloning into 'Casentinoday2020AmigaDemo'...
+remote: Enumerating objects: 496, done.
+remote: Counting objects: 100% (496/496), done.
+remote: Compressing objects: 100% (330/330), done.
+remote: Total 496 (delta 229), reused 394 (delta 130), pack-reused 0
+Receiving objects: 100% (496/496), 2.72 MiB | 4.01 MiB/s, done.
+Resolving deltas: 100% (229/229), done.
+
+
+docker run -it --rm -v "$HOME/compile/Casentinoday2020AmigaDemo:/data" -w /data ozzyboshi/acedocker:20200526 /bin/bash
+
+root@83972ea73ce0:/data# autoreconf -i
+configure.ac:7: installing './compile'
+configure.ac:3: installing './install-sh'
+configure.ac:3: installing './missing'
+src/Makefile.am: installing './depcomp'
+
+
+ozzy@83972ea73ce0:/data# ./configure --host m68k
+checking for a BSD-compatible install... /usr/bin/install -c
+checking whether build environment is sane... yes
+checking for m68k-strip... no
+checking for strip... no
+checking for a thread-safe mkdir -p... /bin/mkdir -p
+checking for gawk... no
+checking for mawk... mawk
+...
+
+root@83972ea73ce0:/data# make
+Making all in _res
+make[1]: Entering directory '/data/_res'
+incbin.sh uni54.fnt uni54.h uni54
+Fonts header file generated
+...
+
+
+```
+
+At this point under floppy directory you will have the adf file named with your compilation date and under floppy/adf the final executable.
+
+
+
 
 
 
