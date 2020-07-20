@@ -2,31 +2,44 @@
 #include <ace/managers/key.h>
 #include <ace/managers/joy.h>
 
+#include <ace/managers/state.h>
+
 #include "demointro.h"
 #include "casentino.h"
 #include "radiallineshiddenpart.h"
 #include "../_res/uni54.h"
 #include "shardeddata.h"
+#include "main.h"
 
-void genericCreate(void) {
-  // Here goes your startup code
+
+tStateManager *g_pGameStateManager = 0;
+tState *g_pGameStates[GAME_STATE_COUNT] = {0};
+
+void genericCreate(void)
+{
   uni54_data_shared = uni54_data;
-  //uni54_size_shared = &uni54_size;
-  logWrite("Hello, Amiga!\n");
   keyCreate();
-  //gamePushState(gameGsCreate,gameGsLoop,gameGsDestroy);
-  gamePushState(demointroGsCreate,demointroGsLoop,demointroGsDestroy);
-  //gamePushState(radialLinesGsCreate,radialLinesGsLoop,radialLinesGsDestroy);
+  g_pGameStateManager = stateManagerCreate();
+  g_pGameStates[0] = stateCreate(demointroGsCreate, demointroGsLoop, demointroGsDestroy, 0, 0, 0);
+  g_pGameStates[1] = stateCreate(gameGsCreate, gameGsLoop, gameGsDestroy, 0, 0, 0);
+  g_pGameStates[2] = stateCreate(radialLinesGsCreate, radialLinesGsLoop, radialLinesGsDestroy, 0, 0, 0);
+  stateChange(g_pGameStateManager, g_pGameStates[0]);
 }
 
-void genericProcess(void) {
+void genericProcess(void)
+{
   keyProcess();
   joyProcess();
-  gameProcess();
+  stateProcess(g_pGameStateManager);
 }
 
-void genericDestroy(void) {
+void genericDestroy(void)
+{
   // Here goes your cleanup code
+  stateManagerDestroy(g_pGameStateManager);
+  stateDestroy(g_pGameStates[0]);
+  stateDestroy(g_pGameStates[1]);
+  stateDestroy(g_pGameStates[2]);
   keyDestroy();
   logWrite("Goodbye, Amiga!\n");
 }

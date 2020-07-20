@@ -16,13 +16,14 @@ Boston, MA 02111-1307, USA.
 
 #include "casentino.h"
 #include "radiallineshiddenpart.h"
-//#include <ace/managers/key.h> // Keyboard processing
+#include <ace/managers/key.h> // Keyboard processing
 #include <ace/managers/game.h> // For using gameClose
 #include <ace/managers/system.h> // For systemUnuse and systemUse
 #include <ace/managers/viewport/simplebuffer.h> // Simple buffer
 #include <ace/utils/font.h> // needed for tFont and font stuff
 #include <ace/managers/joy.h>
 #include <ace/utils/palette.h>
+
 
 // ASSETS START
 // Images and palette
@@ -65,6 +66,7 @@ const unsigned char* uni54_data_shared;
 #include "stagesconfiguration.h"
 #include "collisionsmanagement.h"
 #include "customtrigonometry.h"
+#include "main.h"
 
 #define TOTAL_WIDTH 320*NUM_IMAGES
 #define RESET_SCROLL 320*(NUM_IMAGES-1)
@@ -407,18 +409,24 @@ void gameGsLoop(void) {
 
   // This will loop forever until you "pop" or change gamestate
   // or close the game
-  UBYTE isAnyPressed = (
+  /*UBYTE isAnyPressed = (
     keyUse(KEY_RETURN) | keyUse(KEY_ESCAPE) |
     joyUse(JOY1 + JOY_FIRE) | joyUse(JOY2 + JOY_FIRE)
+  );*/
+
+  UBYTE isAnyPressed = (
+    keyUse(KEY_RETURN) | keyUse(KEY_ESCAPE) 
   );
+
   if(isAnyPressed) {
-    gameClose();
+    gameExit();
     return ;
   }
   // only for debug convenience 
   if (keyUse(KEY_V)) 
     {
-      gameChangeState(radialLinesGsCreate,radialLinesGsLoop,radialLinesGsDestroy);
+      //gameChangeState(radialLinesGsCreate,radialLinesGsLoop,radialLinesGsDestroy);
+      stateChange(g_pGameStateManager, g_pGameStates[2]);
       return ;
       }
     if (keyUse(KEY_C)) 
@@ -743,7 +751,7 @@ void initSound()
   s_pMusic = (unsigned char*)AllocMem(g_tPapercutMod_size,MEMF_CHIP|MEMF_CLEAR);
   if (s_pMusic==NULL)
   {
-    gameClose();
+    gameExit();
     return ;
   }
   for (size_t i=0;i<g_tPapercutMod_size;i++)

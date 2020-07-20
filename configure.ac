@@ -10,7 +10,7 @@ AC_PROG_CC([m68k-amigaos-gcc])
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -DAMIGA -Wall -Wextra -Os')
 #AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -ffast-math -DAMIGA -DACE_DEBUG=ON -Wall -Wextra -O3')
 
-AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -noixemul -ffast-math -DAMIGA -Wall -Wextra -O3')
+AC_SUBST(CFLAGS,'-m68000 -msoft-float -fomit-frame-pointer -s -mcrt=nix20 -ffast-math -DAMIGA -Wall -Wextra -O3')
 
 
 # Need ace include dir to build the prject

@@ -146,7 +146,7 @@ void radialLinesGsCreate(void)
     s_pMusic = (unsigned char*)AllocMem(g_tDiscocrazy_data_size,MEMF_CHIP|MEMF_CLEAR);
     if (s_pMusic==NULL)
     {
-        gameClose();
+        gameExit();
         return ;
     }
     for (size_t i=0;i<g_tDiscocrazy_data_size;i++)
@@ -178,13 +178,15 @@ void radialLinesGsLoop(void)
 {
     mt_music();
 
+    int iChan3Played = chan3played();
+
     // This will loop forever until you "pop" or change gamestate
     // or close the game
-    UBYTE isAnyPressed = (keyUse(KEY_RETURN) | keyUse(KEY_ESCAPE) |
-                          joyUse(JOY1 + JOY_FIRE) | joyUse(JOY2 + JOY_FIRE));
+    UBYTE isAnyPressed = (keyUse(KEY_RETURN) | keyUse(KEY_ESCAPE)/* |
+                          joyUse(JOY1 + JOY_FIRE) | joyUse(JOY2 + JOY_FIRE)*/);
     if (isAnyPressed)
     {
-        gameClose();
+         gameExit();
         return;
     }
 
@@ -238,11 +240,24 @@ void radialLinesGsLoop(void)
             InitLine();
             g_pCustom->bltbdat = uwPattern;
 
-            DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
+            UWORD uwHalfX1 = (80+uwX1)>>1;
+            UWORD uwHalfY1 = (80+uwY1)>>1;
+
+            UWORD uwThreeqX1 = (uwHalfX1+uwX1)>>1;
+            UWORD uwThreeqY1 = (uwHalfY1+uwY1)>>1;
+
+            if (iChan3Played) DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
                 80 + x + uwCenterOffset, 
                 80 + y + uwCenterOffset, 
                 x + uwX1, 
                 y + uwY1
+            );
+
+            else DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
+                80 + x + uwCenterOffset, 
+                80 + y + uwCenterOffset, 
+                x + uwThreeqX1, 
+                y + uwThreeqY1
             );
         }
 
@@ -257,16 +272,30 @@ void radialLinesGsLoop(void)
 
         UWORD uwX1 = (UWORD)(*ptr);
         UWORD uwY1 = (UWORD)(*(ptr + 1));
+
         if (uwX1 > 0 && uwY1 > 0)
         {
             //InitLine();
             g_pCustom->bltbdat = uwPattern;
 
-            DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
+            UWORD uwHalfX1 = (80+uwX1)>>1;
+            UWORD uwHalfY1 = (80+uwY1)>>1;
+
+            UWORD uwThreeqX1 = (uwHalfX1+uwX1)>>1;
+            UWORD uwThreeqY1 = (uwHalfY1+uwY1)>>1;
+
+            if (iChan3Played) DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
                 80 + x + uwCenterOffset, 
                 80 + y + uwCenterOffset, 
                 x + uwX1, 
                 y + uwY1
+            );
+
+            else DrawlineOr((UBYTE *)((ULONG)s_pMainBufferRadialLines->pBack->Planes[0]), 
+                80 + x + uwCenterOffset, 
+                80 + y + uwCenterOffset, 
+                x + uwThreeqX1, 
+                y + uwThreeqY1
             );
 
         }

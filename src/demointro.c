@@ -24,7 +24,7 @@ Boston, MA 02111-1307, USA.
 #include <ace/managers/viewport/simplebuffer.h> // Simple buffer
 #include <ace/utils/palette.h>
 #include <ace/managers/blit.h>
-
+#include "main.h"
 // Assets
 #include "../_res/bootimg.h"
 #include "../_res/bootimgpalette.h"
@@ -160,17 +160,6 @@ void demointroGsLoop(void)
   static UBYTE ubFrameModule = 0;
   UBYTE ubRefresh = 0;
 
-  static int frameno = 0;
-  if(keyUse(KEY_ESCAPE)) 
-  {
-    gameClose();
-  }
-  if (0 && frameno++ > 1000)
-  {
-    //gameClose();return ;
-    gameChangeState(gameGsCreate, gameGsLoop, gameGsDestroy);
-    return;
-  }
   if (automaticMode == 1)
   {
     if (ubFrameModule == 0)
@@ -205,7 +194,7 @@ void demointroGsLoop(void)
 
     if (automaticMode == 2 && ubRefresh == 0)
     {
-      gameChangeState(gameGsCreate, gameGsLoop, gameGsDestroy);
+      stateChange(g_pGameStateManager, g_pGameStates[1]);
       return ;
     }
   }

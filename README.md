@@ -43,7 +43,7 @@ Receiving objects: 100% (496/496), 2.72 MiB | 4.01 MiB/s, done.
 Resolving deltas: 100% (229/229), done.
 
 
-docker run -it --rm -v "$HOME/compile/Casentinoday2020AmigaDemo:/data" -w /data ozzyboshi/acedocker:20200526 /bin/bash
+docker run -it --rm -v "$HOME/compile/Casentinoday2020AmigaDemo:/data" -w /data ozzyboshi/acedocker:ks2.0-2020-07-17 /bin/bash
 
 root@83972ea73ce0:/data# autoreconf -i
 configure.ac:7: installing './compile'
